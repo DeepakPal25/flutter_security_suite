@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.2 - 2026-02-25
+
+### Improved
+
+- Added Swift Package Manager support for iOS (Package.swift)
+- Added PrivacyInfo.xcprivacy manifest for iOS privacy compliance
+- Fixed dart formatting across all source and test files
+- Migrated iOS source files to SPM-compatible directory structure
+
 ## 1.0.1 - 2026-02-25
 
 ### Fixed
