@@ -1,7 +1,10 @@
 name: flutter_security_suite
 description: "SecureBankKit - Enterprise-grade Flutter security plugin with root/jailbreak detection, certificate pinning, screenshot protection, app integrity checks, and secure storage."
 version: 1.0.0
-homepage: https://github.com/example/flutter_security_suite
+homepage: https://github.com/DeepakPal25/flutter_security_suite
+repository: https://github.com/DeepakPal25/flutter_security_suite
+issue_tracker: https://github.com/DeepakPal25/flutter_security_suite/issues
+license: MIT
 
 environment:
   sdk: ^3.10.4
