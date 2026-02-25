@@ -18,8 +18,7 @@ void main() {
 
   group('write', () {
     test('returns Success when datasource succeeds', () async {
-      when(() => mockDs.write(key: 'k', value: 'v'))
-          .thenAnswer((_) async {});
+      when(() => mockDs.write(key: 'k', value: 'v')).thenAnswer((_) async {});
 
       final result = await sut.write(key: 'k', value: 'v');
 
@@ -27,8 +26,9 @@ void main() {
     });
 
     test('returns Failure when datasource throws', () async {
-      when(() => mockDs.write(key: 'k', value: 'v'))
-          .thenThrow(Exception('write error'));
+      when(
+        () => mockDs.write(key: 'k', value: 'v'),
+      ).thenThrow(Exception('write error'));
 
       final result = await sut.write(key: 'k', value: 'v');
 
@@ -73,8 +73,7 @@ void main() {
     });
 
     test('returns Failure when datasource throws', () async {
-      when(() => mockDs.delete(key: 'k'))
-          .thenThrow(Exception('delete error'));
+      when(() => mockDs.delete(key: 'k')).thenThrow(Exception('delete error'));
 
       final result = await sut.delete(key: 'k');
 

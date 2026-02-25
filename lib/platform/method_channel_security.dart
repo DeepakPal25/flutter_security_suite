@@ -5,8 +5,9 @@ import 'package:flutter/services.dart';
 /// All calls use the `feature#action` naming convention, e.g.
 /// `root#isDeviceRooted`, `screenshot#enable`.
 class MethodChannelSecurity {
-  static const MethodChannel _channel =
-      MethodChannel('com.securebankkit/security');
+  static const MethodChannel _channel = MethodChannel(
+    'com.securebankkit/security',
+  );
 
   /// Visible for testing – allows injection of a mock channel.
   static MethodChannel get channel => _channel;
@@ -31,8 +32,7 @@ class MethodChannelSecurity {
   // ── App Integrity ────────────────────────────────────────────
 
   Future<bool> isAppIntegrityValid() async {
-    final result =
-        await _channel.invokeMethod<bool>('integrity#isValid');
+    final result = await _channel.invokeMethod<bool>('integrity#isValid');
     return result ?? false;
   }
 
@@ -49,15 +49,11 @@ class MethodChannelSecurity {
   }
 
   Future<String?> secureStorageRead({required String key}) async {
-    return _channel.invokeMethod<String>('storage#read', {
-      'key': key,
-    });
+    return _channel.invokeMethod<String>('storage#read', {'key': key});
   }
 
   Future<void> secureStorageDelete({required String key}) async {
-    await _channel.invokeMethod<void>('storage#delete', {
-      'key': key,
-    });
+    await _channel.invokeMethod<void>('storage#delete', {'key': key});
   }
 
   Future<void> secureStorageDeleteAll() async {

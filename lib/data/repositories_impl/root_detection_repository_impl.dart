@@ -16,16 +16,14 @@ class RootDetectionRepositoryImpl implements RootDetectionRepository {
       final isRooted = await _datasource.isDeviceRooted();
       return Success(isRooted);
     } catch (e, st) {
-      SecurityLogger.error(
-        'Root detection failed',
-        error: e,
-        stackTrace: st,
+      SecurityLogger.error('Root detection failed', error: e, stackTrace: st);
+      return Failure(
+        PlatformSecurityException(
+          platform: 'native',
+          message: 'Root detection failed: $e',
+          originalError: e,
+        ),
       );
-      return Failure(PlatformSecurityException(
-        platform: 'native',
-        message: 'Root detection failed: $e',
-        originalError: e,
-      ));
     }
   }
 }

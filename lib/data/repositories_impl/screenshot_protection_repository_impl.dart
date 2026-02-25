@@ -22,11 +22,13 @@ class ScreenshotProtectionRepositoryImpl
         error: e,
         stackTrace: st,
       );
-      return Failure(PlatformSecurityException(
-        platform: 'native',
-        message: 'Screenshot protection enable failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        PlatformSecurityException(
+          platform: 'native',
+          message: 'Screenshot protection enable failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 
@@ -42,11 +44,13 @@ class ScreenshotProtectionRepositoryImpl
         error: e,
         stackTrace: st,
       );
-      return Failure(PlatformSecurityException(
-        platform: 'native',
-        message: 'Screenshot protection disable failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        PlatformSecurityException(
+          platform: 'native',
+          message: 'Screenshot protection disable failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 }

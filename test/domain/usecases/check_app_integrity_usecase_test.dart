@@ -18,8 +18,9 @@ void main() {
   });
 
   test('returns Success(true) when app integrity is valid', () async {
-    when(() => mockRepo.isAppIntegrityValid())
-        .thenAnswer((_) async => const Success(true));
+    when(
+      () => mockRepo.isAppIntegrityValid(),
+    ).thenAnswer((_) async => const Success(true));
 
     final result = await sut();
 
@@ -29,8 +30,9 @@ void main() {
   });
 
   test('returns Success(false) when app is tampered', () async {
-    when(() => mockRepo.isAppIntegrityValid())
-        .thenAnswer((_) async => const Success(false));
+    when(
+      () => mockRepo.isAppIntegrityValid(),
+    ).thenAnswer((_) async => const Success(false));
 
     final result = await sut();
 
@@ -38,13 +40,11 @@ void main() {
   });
 
   test('returns Failure on platform error', () async {
-    when(() => mockRepo.isAppIntegrityValid())
-        .thenAnswer((_) async => Failure(
-              PlatformSecurityException(
-                platform: 'native',
-                message: 'check failed',
-              ),
-            ));
+    when(() => mockRepo.isAppIntegrityValid()).thenAnswer(
+      (_) async => Failure(
+        PlatformSecurityException(platform: 'native', message: 'check failed'),
+      ),
+    );
 
     final result = await sut();
 

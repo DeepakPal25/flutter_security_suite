@@ -18,8 +18,9 @@ void main() {
   });
 
   test('calls enableProtection when enable=true', () async {
-    when(() => mockRepo.enableProtection())
-        .thenAnswer((_) async => const Success(null));
+    when(
+      () => mockRepo.enableProtection(),
+    ).thenAnswer((_) async => const Success(null));
 
     final result = await sut(enable: true);
 
@@ -29,8 +30,9 @@ void main() {
   });
 
   test('calls disableProtection when enable=false', () async {
-    when(() => mockRepo.disableProtection())
-        .thenAnswer((_) async => const Success(null));
+    when(
+      () => mockRepo.disableProtection(),
+    ).thenAnswer((_) async => const Success(null));
 
     final result = await sut(enable: false);
 
@@ -40,12 +42,11 @@ void main() {
   });
 
   test('returns Failure on platform error', () async {
-    when(() => mockRepo.enableProtection()).thenAnswer((_) async => Failure(
-          PlatformSecurityException(
-            platform: 'native',
-            message: 'no activity',
-          ),
-        ));
+    when(() => mockRepo.enableProtection()).thenAnswer(
+      (_) async => Failure(
+        PlatformSecurityException(platform: 'native', message: 'no activity'),
+      ),
+    );
 
     final result = await sut(enable: true);
 

@@ -30,9 +30,6 @@ class SecurityStatus {
           other.isCertificatePinningValid == isCertificatePinningValid;
 
   @override
-  int get hashCode => Object.hash(
-        isRooted,
-        isAppIntegrityValid,
-        isCertificatePinningValid,
-      );
+  int get hashCode =>
+      Object.hash(isRooted, isAppIntegrityValid, isCertificatePinningValid);
 }

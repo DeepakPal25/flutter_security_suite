@@ -21,25 +21,25 @@ void main() {
   const pins = ['sha256/AAAA'];
 
   test('returns Success(true) when certificate is valid', () async {
-    when(() => mockRepo.validateCertificate(host: host, pins: pins))
-        .thenAnswer((_) async => const Success(true));
+    when(
+      () => mockRepo.validateCertificate(host: host, pins: pins),
+    ).thenAnswer((_) async => const Success(true));
 
     final result = await sut(host: host, pins: pins);
 
     expect(result, isA<Success<bool>>());
     expect(result.dataOrNull, isTrue);
-    verify(() => mockRepo.validateCertificate(host: host, pins: pins))
-        .called(1);
+    verify(
+      () => mockRepo.validateCertificate(host: host, pins: pins),
+    ).called(1);
   });
 
   test('returns Failure when validation fails', () async {
-    when(() => mockRepo.validateCertificate(host: host, pins: pins))
-        .thenAnswer((_) async => Failure(
-              CertificatePinningException(
-                host: host,
-                message: 'connection failed',
-              ),
-            ));
+    when(() => mockRepo.validateCertificate(host: host, pins: pins)).thenAnswer(
+      (_) async => Failure(
+        CertificatePinningException(host: host, message: 'connection failed'),
+      ),
+    );
 
     final result = await sut(host: host, pins: pins);
 

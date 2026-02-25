@@ -10,8 +10,9 @@ screenshot protection, app integrity checks, and secure storage for Flutter apps
   s.license          = { :type => 'MIT', :file => '../LICENSE' }
   s.author           = { 'Deepak Pal' => 'deepaksitapal@gmail.com' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'flutter_security_suite/Sources/flutter_security_suite/**/*.swift'
   s.dependency 'Flutter'
   s.platform         = :ios, '12.0'
   s.swift_version    = '5.0'
+  s.resource_bundles = { 'flutter_security_suite_privacy' => ['flutter_security_suite/Sources/flutter_security_suite/PrivacyInfo.xcprivacy'] }
 end

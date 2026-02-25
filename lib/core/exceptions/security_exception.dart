@@ -41,8 +41,7 @@ class PlatformSecurityException extends SecurityException {
   });
 
   @override
-  String toString() =>
-      'PlatformSecurityException($platform): $message';
+  String toString() => 'PlatformSecurityException($platform): $message';
 }
 
 /// Thrown when secure storage operations fail.

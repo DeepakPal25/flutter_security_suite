@@ -19,8 +19,9 @@ void main() {
 
   group('write', () {
     test('delegates to repository and returns Success', () async {
-      when(() => mockRepo.write(key: 'k', value: 'v'))
-          .thenAnswer((_) async => const Success(null));
+      when(
+        () => mockRepo.write(key: 'k', value: 'v'),
+      ).thenAnswer((_) async => const Success(null));
 
       final result = await sut.write(key: 'k', value: 'v');
 
@@ -31,8 +32,9 @@ void main() {
 
   group('read', () {
     test('returns stored value on success', () async {
-      when(() => mockRepo.read(key: 'k'))
-          .thenAnswer((_) async => const Success('secret'));
+      when(
+        () => mockRepo.read(key: 'k'),
+      ).thenAnswer((_) async => const Success('secret'));
 
       final result = await sut.read(key: 'k');
 
@@ -40,8 +42,9 @@ void main() {
     });
 
     test('returns null when key is absent', () async {
-      when(() => mockRepo.read(key: 'missing'))
-          .thenAnswer((_) async => const Success(null));
+      when(
+        () => mockRepo.read(key: 'missing'),
+      ).thenAnswer((_) async => const Success(null));
 
       final result = await sut.read(key: 'missing');
 
@@ -52,8 +55,9 @@ void main() {
 
   group('delete', () {
     test('delegates to repository', () async {
-      when(() => mockRepo.delete(key: 'k'))
-          .thenAnswer((_) async => const Success(null));
+      when(
+        () => mockRepo.delete(key: 'k'),
+      ).thenAnswer((_) async => const Success(null));
 
       final result = await sut.delete(key: 'k');
 
@@ -63,8 +67,9 @@ void main() {
 
   group('deleteAll', () {
     test('delegates to repository', () async {
-      when(() => mockRepo.deleteAll())
-          .thenAnswer((_) async => const Success(null));
+      when(
+        () => mockRepo.deleteAll(),
+      ).thenAnswer((_) async => const Success(null));
 
       final result = await sut.deleteAll();
 
@@ -72,9 +77,9 @@ void main() {
     });
 
     test('returns Failure on error', () async {
-      when(() => mockRepo.deleteAll()).thenAnswer((_) async => Failure(
-            SecureStorageException(message: 'wipe failed'),
-          ));
+      when(() => mockRepo.deleteAll()).thenAnswer(
+        (_) async => Failure(SecureStorageException(message: 'wipe failed')),
+      );
 
       final result = await sut.deleteAll();
 

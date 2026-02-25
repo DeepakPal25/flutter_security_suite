@@ -34,8 +34,9 @@ void main() {
   });
 
   test('returns Failure when datasource throws', () async {
-    when(() => mockDs.isAppIntegrityValid())
-        .thenThrow(Exception('check failed'));
+    when(
+      () => mockDs.isAppIntegrityValid(),
+    ).thenThrow(Exception('check failed'));
 
     final result = await sut.isAppIntegrityValid();
 

@@ -18,8 +18,9 @@ void main() {
   });
 
   test('returns Success(true) when device is rooted', () async {
-    when(() => mockRepo.isDeviceRooted())
-        .thenAnswer((_) async => const Success(true));
+    when(
+      () => mockRepo.isDeviceRooted(),
+    ).thenAnswer((_) async => const Success(true));
 
     final result = await sut();
 
@@ -29,8 +30,9 @@ void main() {
   });
 
   test('returns Success(false) when device is not rooted', () async {
-    when(() => mockRepo.isDeviceRooted())
-        .thenAnswer((_) async => const Success(false));
+    when(
+      () => mockRepo.isDeviceRooted(),
+    ).thenAnswer((_) async => const Success(false));
 
     final result = await sut();
 
@@ -38,12 +40,11 @@ void main() {
   });
 
   test('returns Failure on platform error', () async {
-    when(() => mockRepo.isDeviceRooted()).thenAnswer((_) async => Failure(
-          PlatformSecurityException(
-            platform: 'native',
-            message: 'failed',
-          ),
-        ));
+    when(() => mockRepo.isDeviceRooted()).thenAnswer(
+      (_) async => Failure(
+        PlatformSecurityException(platform: 'native', message: 'failed'),
+      ),
+    );
 
     final result = await sut();
 

@@ -12,22 +12,21 @@ void main() {
     sut = MethodChannelSecurity();
     log.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      MethodChannelSecurity.channel,
-      (MethodCall call) async {
-        log.add(call);
-        switch (call.method) {
-          case 'root#isDeviceRooted':
-            return true;
-          case 'integrity#isValid':
-            return false;
-          case 'storage#read':
-            return 'secret_value';
-          default:
-            return null;
-        }
-      },
-    );
+        .setMockMethodCallHandler(MethodChannelSecurity.channel, (
+          MethodCall call,
+        ) async {
+          log.add(call);
+          switch (call.method) {
+            case 'root#isDeviceRooted':
+              return true;
+            case 'integrity#isValid':
+              return false;
+            case 'storage#read':
+              return 'secret_value';
+            default:
+              return null;
+          }
+        });
   });
 
   tearDown(() {
@@ -52,12 +51,14 @@ void main() {
       expect(log.single.method, 'screenshot#disable');
     });
 
-    test('isAppIntegrityValid sends correct method and returns result',
-        () async {
-      final result = await sut.isAppIntegrityValid();
-      expect(result, isFalse);
-      expect(log.single.method, 'integrity#isValid');
-    });
+    test(
+      'isAppIntegrityValid sends correct method and returns result',
+      () async {
+        final result = await sut.isAppIntegrityValid();
+        expect(result, isFalse);
+        expect(log.single.method, 'integrity#isValid');
+      },
+    );
 
     test('secureStorageWrite sends correct method with args', () async {
       await sut.secureStorageWrite(key: 'k', value: 'v');

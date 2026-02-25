@@ -33,11 +33,7 @@ class SecurityLogger {
   }
 
   /// Log an error with an optional [error] object and [stackTrace].
-  static void error(
-    String message, {
-    Object? error,
-    StackTrace? stackTrace,
-  }) {
+  static void error(String message, {Object? error, StackTrace? stackTrace}) {
     if (_enabled) {
       developer.log(
         '✖ $message',

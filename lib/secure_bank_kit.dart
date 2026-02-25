@@ -53,13 +53,13 @@ class SecureBankKit {
     required CheckAppIntegrityUseCase checkAppIntegrity,
     required ToggleScreenshotProtectionUseCase toggleScreenshot,
     required SecureStorageUseCase secureStorageUseCase,
-  })  : _enableRootDetection = enableRootDetection,
-        _enablePinning = enablePinning,
-        _enableAppIntegrity = enableAppIntegrity,
-        _certificatePins = certificatePins,
-        _checkRoot = checkRoot,
-        _validateCertificate = validateCertificate,
-        _checkAppIntegrity = checkAppIntegrity {
+  }) : _enableRootDetection = enableRootDetection,
+       _enablePinning = enablePinning,
+       _enableAppIntegrity = enableAppIntegrity,
+       _certificatePins = certificatePins,
+       _checkRoot = checkRoot,
+       _validateCertificate = validateCertificate,
+       _checkAppIntegrity = checkAppIntegrity {
     screenshotProtection = ScreenshotProtection._(toggleScreenshot);
     secureStorage = SecureStorage._(secureStorageUseCase);
   }
@@ -173,8 +173,7 @@ class SecureStorage {
   Future<SecurityResult<void>> write({
     required String key,
     required String value,
-  }) =>
-      _useCase.write(key: key, value: value);
+  }) => _useCase.write(key: key, value: value);
 
   Future<SecurityResult<String?>> read({required String key}) =>
       _useCase.read(key: key);

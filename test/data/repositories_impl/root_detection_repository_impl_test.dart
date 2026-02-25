@@ -34,8 +34,7 @@ void main() {
   });
 
   test('returns Failure when datasource throws', () async {
-    when(() => mockDs.isDeviceRooted())
-        .thenThrow(Exception('platform error'));
+    when(() => mockDs.isDeviceRooted()).thenThrow(Exception('platform error'));
 
     final result = await sut.isDeviceRooted();
 

@@ -4,8 +4,7 @@ import '../../core/utils/logger.dart';
 import '../../domain/repositories/certificate_pinning_repository.dart';
 import '../datasources/certificate_pinning_datasource.dart';
 
-class CertificatePinningRepositoryImpl
-    implements CertificatePinningRepository {
+class CertificatePinningRepositoryImpl implements CertificatePinningRepository {
   final CertificatePinningDatasource _datasource;
 
   const CertificatePinningRepositoryImpl(this._datasource);
@@ -28,11 +27,13 @@ class CertificatePinningRepositoryImpl
         error: e,
         stackTrace: st,
       );
-      return Failure(CertificatePinningException(
-        host: host,
-        message: e.toString(),
-        originalError: e,
-      ));
+      return Failure(
+        CertificatePinningException(
+          host: host,
+          message: e.toString(),
+          originalError: e,
+        ),
+      );
     }
   }
 }

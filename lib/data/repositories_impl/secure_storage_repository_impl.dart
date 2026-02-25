@@ -24,11 +24,13 @@ class SecureStorageRepositoryImpl implements SecureStorageRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure(SecureStorageException(
-        key: key,
-        message: 'Write failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        SecureStorageException(
+          key: key,
+          message: 'Write failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 
@@ -44,11 +46,13 @@ class SecureStorageRepositoryImpl implements SecureStorageRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure(SecureStorageException(
-        key: key,
-        message: 'Read failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        SecureStorageException(
+          key: key,
+          message: 'Read failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 
@@ -64,11 +68,13 @@ class SecureStorageRepositoryImpl implements SecureStorageRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure(SecureStorageException(
-        key: key,
-        message: 'Delete failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        SecureStorageException(
+          key: key,
+          message: 'Delete failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 
@@ -84,10 +90,12 @@ class SecureStorageRepositoryImpl implements SecureStorageRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure(SecureStorageException(
-        message: 'DeleteAll failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        SecureStorageException(
+          message: 'DeleteAll failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 }

@@ -19,10 +19,10 @@ class CertificatePinningDatasource {
       final certificate = response.certificate;
       if (certificate == null) return false;
 
-      final fingerprint =
-          sha256.convert(certificate.der).toString();
-      final normalised =
-          pins.map((p) => p.replaceFirst('sha256/', '').toLowerCase());
+      final fingerprint = sha256.convert(certificate.der).toString();
+      final normalised = pins.map(
+        (p) => p.replaceFirst('sha256/', '').toLowerCase(),
+      );
 
       await response.drain<void>();
       return normalised.contains(fingerprint.toLowerCase());

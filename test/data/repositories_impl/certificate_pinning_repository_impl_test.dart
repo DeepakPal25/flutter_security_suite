@@ -20,8 +20,9 @@ void main() {
   const pins = ['sha256/AAAA'];
 
   test('returns Success(true) when datasource validates', () async {
-    when(() => mockDs.validateCertificate(host: host, pins: pins))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockDs.validateCertificate(host: host, pins: pins),
+    ).thenAnswer((_) async => true);
 
     final result = await sut.validateCertificate(host: host, pins: pins);
 
@@ -30,8 +31,9 @@ void main() {
   });
 
   test('returns Success(false) when pin mismatch', () async {
-    when(() => mockDs.validateCertificate(host: host, pins: pins))
-        .thenAnswer((_) async => false);
+    when(
+      () => mockDs.validateCertificate(host: host, pins: pins),
+    ).thenAnswer((_) async => false);
 
     final result = await sut.validateCertificate(host: host, pins: pins);
 
@@ -39,8 +41,9 @@ void main() {
   });
 
   test('returns Failure when datasource throws', () async {
-    when(() => mockDs.validateCertificate(host: host, pins: pins))
-        .thenThrow(Exception('network error'));
+    when(
+      () => mockDs.validateCertificate(host: host, pins: pins),
+    ).thenThrow(Exception('network error'));
 
     final result = await sut.validateCertificate(host: host, pins: pins);
 

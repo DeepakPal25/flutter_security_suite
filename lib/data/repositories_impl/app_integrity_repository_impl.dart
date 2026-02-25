@@ -21,11 +21,13 @@ class AppIntegrityRepositoryImpl implements AppIntegrityRepository {
         error: e,
         stackTrace: st,
       );
-      return Failure(PlatformSecurityException(
-        platform: 'native',
-        message: 'App integrity check failed: $e',
-        originalError: e,
-      ));
+      return Failure(
+        PlatformSecurityException(
+          platform: 'native',
+          message: 'App integrity check failed: $e',
+          originalError: e,
+        ),
+      );
     }
   }
 }
