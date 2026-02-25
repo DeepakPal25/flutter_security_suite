@@ -1,4 +1,6 @@
 import Foundation
+import MachO
+import UIKit
 
 /// Detects whether the iOS device is jailbroken.
 ///
@@ -62,15 +64,11 @@ class JailbreakDetectionHandler {
     }
 
     private func checkFork() -> Bool {
-        let pid = fork()
-        if pid >= 0 {
-            // Fork succeeded → jailbroken (sandbox should prevent this)
-            if pid > 0 {
-                kill(pid, SIGTERM)
-            }
-            return true
+        // Check if Cydia URL scheme is registered — indicates jailbreak
+        guard let url = URL(string: "cydia://package/com.example.package") else {
+            return false
         }
-        return false
+        return UIApplication.shared.canOpenURL(url)
     }
 
     private func checkWritablePaths() -> Bool {
