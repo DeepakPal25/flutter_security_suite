@@ -6,9 +6,9 @@ Pod::Spec.new do |s|
 SecureBankKit provides root/jailbreak detection, certificate pinning,
 screenshot protection, app integrity checks, and secure storage for Flutter apps.
                        DESC
-  s.homepage         = 'https://github.com/example/flutter_security_suite'
+  s.homepage         = 'https://github.com/DeepakPal25/flutter_security_suite'
   s.license          = { :type => 'MIT', :file => '../LICENSE' }
-  s.author           = { 'SecureBankKit' => 'info@securebankkit.com' }
+  s.author           = { 'Deepak Pal' => 'deepaksitapal@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'Flutter'

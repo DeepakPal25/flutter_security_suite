@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.1 - 2026-02-25
+
+### Fixed
+
+- Updated iOS podspec homepage and author metadata
+- Added pub.dev topics for better discoverability (security, encryption, root-detection, certificate-pinning, storage)
+- Added funding link
+
 ## 1.0.0 - 2026-02-25
 
 ### Added
