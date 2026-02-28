@@ -33,7 +33,6 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 /build/
 example/build/
-example/pubspec.lock
 /coverage/
 
 # Swift Package Manager
@@ -50,5 +49,4 @@ android/generatedDebugSources/
 ios/Pods/
 ios/*.xcworkspace/
 example/ios/Pods/
-example/ios/*.xcworkspace/
 *.xcuserstate
