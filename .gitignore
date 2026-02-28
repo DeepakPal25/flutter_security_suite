@@ -29,7 +29,26 @@ migrate_working_dir/
 /pubspec.lock
 **/doc/api/
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 /build/
 example/build/
+example/pubspec.lock
 /coverage/
+
+# Swift Package Manager
+**/.build/
+**/Package.resolved
+
+# Android
+android/.gradle/
+android/local.properties
+android/captures/
+android/generatedDebugSources/
+
+# iOS / CocoaPods
+ios/Pods/
+ios/*.xcworkspace/
+example/ios/Pods/
+example/ios/*.xcworkspace/
+*.xcuserstate
