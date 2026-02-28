@@ -1,13 +1,21 @@
 package com.securebankkit.flutter_security_suite.handlers
 
+import android.content.Context
+import android.content.pm.PackageManager
 import java.io.File
 
 /**
  * Detects whether the Android device is rooted.
  *
- * Checks: su binaries, dangerous apps, test-keys in build tags.
+ * Checks: su binaries, dangerous apps (via PackageManager), test-keys in
+ * build tags.
+ *
+ * Note: On Android 11+ (API 30+) the root-related package names must be
+ * declared in the app's merged AndroidManifest.xml under <queries>. The
+ * library's AndroidManifest already includes these declarations, which are
+ * merged automatically by the Gradle build system.
  */
-class RootDetectionHandler {
+class RootDetectionHandler(private val context: Context) {
 
     fun isDeviceRooted(): Boolean {
         return checkSuBinaries() || checkDangerousApps() || checkTestKeys()
@@ -39,11 +47,13 @@ class RootDetectionHandler {
             "com.yellowes.su",
             "com.topjohnwu.magisk"
         )
+        val pm = context.packageManager
         return packages.any { pkg ->
             try {
-                Runtime.getRuntime().exec("pm list packages $pkg")
-                    .inputStream.bufferedReader().readText().contains(pkg)
-            } catch (_: Exception) {
+                @Suppress("DEPRECATION")
+                pm.getPackageInfo(pkg, 0)
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
                 false
             }
         }

@@ -21,13 +21,15 @@ class SecureBankKitPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var context: Context
     private var activity: Activity? = null
 
-    private val rootHandler = RootDetectionHandler()
+    // rootHandler requires Context; initialised in onAttachedToEngine.
+    private lateinit var rootHandler: RootDetectionHandler
     private val screenshotHandler = ScreenshotHandler()
     private val integrityHandler = AppIntegrityHandler()
     private val storageHandler = SecureStorageHandler()
 
     override fun onAttachedToEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
+        rootHandler = RootDetectionHandler(context)
         channel = MethodChannel(binding.binaryMessenger, "com.securebankkit/security")
         channel.setMethodCallHandler(this)
     }
@@ -45,16 +47,29 @@ class SecureBankKitPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
             // ── Screenshot Protection ───────────────────
             "screenshot#enable" -> {
-                activity?.runOnUiThread {
-                    screenshotHandler.enable(activity)
-                    result.success(null)
-                } ?: result.error("NO_ACTIVITY", "No activity attached", null)
+                // Capture the activity reference before the lambda to avoid a
+                // TOCTOU race where activity detaches between the null-check
+                // and the lambda execution.
+                val currentActivity = activity
+                if (currentActivity != null) {
+                    currentActivity.runOnUiThread {
+                        screenshotHandler.enable(currentActivity)
+                        result.success(null)
+                    }
+                } else {
+                    result.error("NO_ACTIVITY", "No activity attached", null)
+                }
             }
             "screenshot#disable" -> {
-                activity?.runOnUiThread {
-                    screenshotHandler.disable(activity)
-                    result.success(null)
-                } ?: result.error("NO_ACTIVITY", "No activity attached", null)
+                val currentActivity = activity
+                if (currentActivity != null) {
+                    currentActivity.runOnUiThread {
+                        screenshotHandler.disable(currentActivity)
+                        result.success(null)
+                    }
+                } else {
+                    result.error("NO_ACTIVITY", "No activity attached", null)
+                }
             }
 
             // ── App Integrity ───────────────────────────

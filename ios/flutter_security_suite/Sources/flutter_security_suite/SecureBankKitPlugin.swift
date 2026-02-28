@@ -25,13 +25,14 @@ public class SecureBankKitPlugin: NSObject, FlutterPlugin {
             result(jailbreakHandler.isDeviceJailbroken())
 
         // ── Screenshot Protection ───────────────────
+        // result(nil) is called inside the completion block so that success is
+        // only reported after the protection is actually applied (the enable/
+        // disable work is dispatched asynchronously to the main queue).
         case "screenshot#enable":
-            screenshotHandler.enable()
-            result(nil)
+            screenshotHandler.enable { result(nil) }
 
         case "screenshot#disable":
-            screenshotHandler.disable()
-            result(nil)
+            screenshotHandler.disable { result(nil) }
 
         // ── App Integrity ───────────────────────────
         case "integrity#isValid":
@@ -82,12 +83,28 @@ public class SecureBankKitPlugin: NSObject, FlutterPlugin {
                 ))
                 return
             }
-            let _ = storageHandler.delete(key: key)
-            result(nil)
+            let success = storageHandler.delete(key: key)
+            if success {
+                result(nil)
+            } else {
+                result(FlutterError(
+                    code: "STORAGE_ERROR",
+                    message: "Failed to delete from keychain",
+                    details: nil
+                ))
+            }
 
         case "storage#deleteAll":
-            let _ = storageHandler.deleteAll()
-            result(nil)
+            let success = storageHandler.deleteAll()
+            if success {
+                result(nil)
+            } else {
+                result(FlutterError(
+                    code: "STORAGE_ERROR",
+                    message: "Failed to clear keychain",
+                    details: nil
+                ))
+            }
 
         default:
             result(FlutterMethodNotImplemented)

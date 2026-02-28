@@ -1,14 +1,25 @@
 import UIKit
 
 /// Manages screenshot protection using a secure text field overlay technique.
+///
+/// A `UITextField` with `isSecureTextEntry = true` placed in the window
+/// hierarchy causes UIKit to exclude the window's content from screenshots
+/// and screen recordings. No layer manipulation is needed beyond adding the
+/// field as a subview.
 class ScreenshotHandler {
 
     private var secureField: UITextField?
 
-    func enable() {
+    /// Enables screenshot protection and calls [completion] once the protection
+    /// is active. The completion is invoked on the main thread.
+    func enable(completion: (() -> Void)? = nil) {
         DispatchQueue.main.async { [weak self] in
-            guard let window = self?.getKeyWindow() else { return }
-            if self?.secureField == nil {
+            guard let self = self else { return }
+            if self.secureField == nil {
+                guard let window = self.getKeyWindow() else {
+                    completion?()
+                    return
+                }
                 let field = UITextField()
                 field.isSecureTextEntry = true
                 field.isUserInteractionEnabled = false
@@ -18,18 +29,20 @@ class ScreenshotHandler {
                     field.centerXAnchor.constraint(equalTo: window.centerXAnchor),
                     field.centerYAnchor.constraint(equalTo: window.centerYAnchor)
                 ])
-                field.layer.sublayers?.first?.addSublayer(window.layer)
-                self?.secureField = field
+                self.secureField = field
             }
-            self?.secureField?.isSecureTextEntry = true
+            self.secureField?.isSecureTextEntry = true
+            completion?()
         }
     }
 
-    func disable() {
+    /// Disables screenshot protection and calls [completion] once done.
+    func disable(completion: (() -> Void)? = nil) {
         DispatchQueue.main.async { [weak self] in
             self?.secureField?.isSecureTextEntry = false
             self?.secureField?.removeFromSuperview()
             self?.secureField = nil
+            completion?()
         }
     }
 

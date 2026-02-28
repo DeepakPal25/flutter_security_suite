@@ -49,5 +49,6 @@ void main() {
     final result = await sut();
 
     expect(result, isA<Failure<bool>>());
+    verify(() => mockRepo.isAppIntegrityValid()).called(1);
   });
 }

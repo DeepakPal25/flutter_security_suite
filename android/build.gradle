@@ -41,10 +41,11 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 23
+        targetSdk = 34
     }
 }
 
 dependencies {
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06") // MasterKey.Builder API requires 1.1.0+
 }

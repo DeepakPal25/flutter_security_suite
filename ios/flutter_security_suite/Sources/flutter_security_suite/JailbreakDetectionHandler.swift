@@ -4,13 +4,14 @@ import UIKit
 
 /// Detects whether the iOS device is jailbroken.
 ///
-/// Checks: known jailbreak files, dylibs, fork ability, writable system paths.
+/// Checks: known jailbreak files, suspicious dylibs, Cydia URL scheme,
+/// writable system paths.
 class JailbreakDetectionHandler {
 
     func isDeviceJailbroken() -> Bool {
         return checkJailbreakFiles()
             || checkDylibs()
-            || checkFork()
+            || checkCydiaInstalled()
             || checkWritablePaths()
     }
 
@@ -63,8 +64,16 @@ class JailbreakDetectionHandler {
         return false
     }
 
-    private func checkFork() -> Bool {
-        // Check if Cydia URL scheme is registered — indicates jailbreak
+    /// Checks whether the Cydia URL scheme is registered, which indicates a
+    /// jailbroken device.
+    ///
+    /// **Important:** For this check to return `true` on a jailbroken device,
+    /// the host app's `Info.plist` must declare `cydia` under
+    /// `LSApplicationQueriesSchemes`. Without that declaration iOS 9+ will
+    /// always return `false` from `canOpenURL`, making the check a no-op.
+    /// The remaining checks (`checkJailbreakFiles`, `checkDylibs`,
+    /// `checkWritablePaths`) are reliable without any plist changes.
+    private func checkCydiaInstalled() -> Bool {
         guard let url = URL(string: "cydia://package/com.example.package") else {
             return false
         }

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'flutter_security_suite'
-  s.version          = '1.0.0'
+  s.version          = '1.0.2'
   s.summary          = 'SecureBankKit - Enterprise-grade Flutter security plugin.'
   s.description      = <<-DESC
 SecureBankKit provides root/jailbreak detection, certificate pinning,

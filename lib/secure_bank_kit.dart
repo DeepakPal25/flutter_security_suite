@@ -122,7 +122,8 @@ class SecureBankKit {
 
     if (_enableRootDetection) {
       final result = await _checkRoot();
-      isRooted = result.dataOrNull ?? false;
+      // Fail secure: if the check itself errors, treat as potentially rooted.
+      isRooted = result.dataOrNull ?? true;
     }
 
     if (_enableAppIntegrity) {

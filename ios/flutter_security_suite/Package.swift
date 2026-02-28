@@ -7,7 +7,7 @@ let package = Package(
         .iOS(.v12)
     ],
     products: [
-        .library(name: "flutter-security-suite", targets: ["flutter_security_suite"])
+        .library(name: "flutter_security_suite", targets: ["flutter_security_suite"])
     ],
     dependencies: [],
     targets: [
