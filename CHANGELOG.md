@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.3 - 2026-02-28
+
+### Fixed
+
+- **Dart**: Fixed invalid `sdk: ^3.10.4` constraint (was unresolvable) to `>=3.0.0 <4.0.0`
+- **Dart**: Fixed `flutter_lints: ^6.0.0` (non-existent version) to `^4.0.0`
+- **Dart**: Certificate pinning now hashes the Subject Public Key Info (SPKI) instead of the full DER certificate — pins now survive certificate renewals when the key pair stays the same
+- **Dart**: Added 10-second connection timeout to certificate pinning HTTP client
+- **Dart**: Fixed response body drain when certificate is `null` (connection leak)
+- **Dart**: Root check fail-safe now defaults to `true` (assumed rooted) on platform error instead of `false`
+- **Android**: Migrated `SecureStorageHandler` from deprecated `MasterKeys` API to `MasterKey.Builder`; instance is now cached in a thread-safe singleton
+- **Android**: Replaced `Runtime.exec()` shell command in `RootDetectionHandler` with `PackageManager.getPackageInfo()` — fixes resource leak and broken behaviour on API 30+ (SELinux blocks shell exec)
+- **Android**: Added `<queries>` entries to `AndroidManifest.xml` for root-app package visibility on Android 11+
+- **Android**: Fixed activity TOCTOU race in screenshot handler by capturing activity reference before `runOnUiThread` lambda
+- **Android**: Set `minSdk=23` (required by security-crypto) and `targetSdk=34`
+- **iOS**: Removed incorrect `window.layer` sublayer manipulation in `ScreenshotHandler` that caused visual corruption
+- **iOS**: `ScreenshotHandler.enable/disable` now accept a completion callback so the Flutter result is sent only after protection is actually applied
+- **iOS**: `AppIntegrityHandler.isAppIntegrityValid()` now only checks for debugger attachment — provisioning profile check moved to new `isAppStoreBuild()` method so TestFlight builds are no longer incorrectly blocked
+- **iOS**: Renamed `checkFork()` to `checkCydiaInstalled()` with accurate documentation about `LSApplicationQueriesSchemes` requirement
+- **iOS**: `delete()` and `deleteAll()` in `SecureBankKitPlugin` now properly report keychain errors to Dart
+- **iOS**: Fixed `Package.swift` library name from `flutter-security-suite` (hyphen) to `flutter_security_suite` — SPM integration was silently broken
+- **iOS**: Synced podspec version to `1.0.3`
+- **Tests**: Added `verify()` call to failure-path tests in use case test suite
+- **Tests**: Replaced empty `RunnerTests.testExample()` with an actual assertion
+
 ## 1.0.2 - 2026-02-25
 
 ### Improved
