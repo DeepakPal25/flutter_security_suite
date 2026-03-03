@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.4 - 2026-03-03
+
+### Changed
+
+- Removed "enterprise-grade" marketing language from package description and README
+- Added honest **Alternatives** section comparing to freerasp (Talsec) and flutter_ios_security_suite
+- Added **Limitations** section documenting root-detection bypass vectors, Dart-only pinning scope, iOS screenshot gaps, and absence of active threat-intel feed
+- Fixed README installation snippet (was showing git URL instead of pub.dev dependency)
+- Fixed README SDK minimum version (was `3.10.4`, actual constraint is `3.0.0`)
+- Fixed README Android min SDK (was API 21, actual requirement is API 23 for EncryptedSharedPreferences)
+- Added SPKI pin extraction shell command to certificate pinning docs
+- Removed personal GitHub funding link from pubspec
+
 ## 1.0.3 - 2026-02-28
 
 ### Fixed
