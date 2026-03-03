@@ -1,42 +1,46 @@
-# Flutter Security Suite (SecureBankKit)
+# flutter_security_suite
 
-A comprehensive, enterprise-grade Flutter security plugin providing root/jailbreak detection, certificate pinning, app integrity verification, screenshot protection, and encrypted secure storage.
+A Flutter plugin for mobile app security, providing root/jailbreak detection, certificate pinning, app integrity verification, screenshot protection, and encrypted secure storage — with native implementations for Android (Kotlin) and iOS (Swift).
 
-Built with **Clean Architecture** principles and full native support for both **Android** (Kotlin) and **iOS** (Swift).
-
+[![pub.dev](https://img.shields.io/pub/v/flutter_security_suite.svg)](https://pub.dev/packages/flutter_security_suite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-green.svg)]()
-[![Flutter](https://img.shields.io/badge/Flutter-%3E%3D3.10.0-02569B.svg)](https://flutter.dev)
+
+> **Note:** This is an open-source project maintained by an individual developer. For applications with strict compliance requirements (banking, healthcare, payments), also evaluate [freeRASP by Talsec](https://pub.dev/packages/freerasp) — a vendor-backed solution with active threat intelligence updates.
 
 ---
 
 ## Features
 
-| Feature | Android | iOS | Description |
-|---------|---------|-----|-------------|
-| Root/Jailbreak Detection | su binary & app detection | Cydia, dylib scanning, file checks | Detects compromised devices |
-| Certificate Pinning | SHA-256 fingerprint validation | SHA-256 fingerprint validation | Prevents MITM attacks |
-| App Integrity | Debug flag & installer validation | Debugger & provisioning checks | Detects tampering |
-| Screenshot Protection | `FLAG_SECURE` window flag | Secure UITextField overlay | Blocks screen capture |
-| Secure Storage | EncryptedSharedPreferences (AES-256) | iOS Keychain (SecItem API) | Encrypted key-value storage |
+| Feature | Android | iOS |
+|---------|---------|-----|
+| Root/Jailbreak Detection | su binary & app detection | Cydia, dylib scanning, file checks |
+| Certificate Pinning | SHA-256 SPKI fingerprint | SHA-256 SPKI fingerprint |
+| App Integrity | Debug flag & installer validation | Debugger detection via sysctl |
+| Screenshot Protection | `FLAG_SECURE` window flag | Secure UITextField overlay |
+| Secure Storage | EncryptedSharedPreferences (AES-256) | iOS Keychain (SecItem API) |
 
 ---
 
-## Architecture
+## Alternatives
 
-```
-┌─────────────────────────────────────────────┐
-│   PUBLIC API (SecureBankKit)                 │  Consumer-facing facade
-├─────────────────────────────────────────────┤
-│   DOMAIN (Entities, UseCases, Repositories) │  Business logic & contracts
-├─────────────────────────────────────────────┤
-│   DATA (Datasources, Repository Impls)      │  Implementation layer
-├─────────────────────────────────────────────┤
-│   PLATFORM (MethodChannel Bridge)           │  Flutter ↔ Native bridge
-├─────────────────────────────────────────────┤
-│   CORE (Result types, Exceptions, Logger)   │  Shared utilities
-└─────────────────────────────────────────────┘
-```
+Before choosing this package, consider which tool fits your needs:
+
+| Package | Maintained by | Best for |
+|---------|--------------|----------|
+| **flutter_security_suite** (this) | Individual (open-source) | Learning, prototypes, open auditing |
+| [freerasp](https://pub.dev/packages/freerasp) | Talsec (company) | Production apps requiring active threat intel |
+| [flutter_ios_security_suite](https://pub.dev/packages/flutter_ios_security_suite) | Individual (open-source) | iOS-only jailbreak checks |
+
+---
+
+## Limitations & Security Considerations
+
+- **Root/jailbreak detection is heuristic.** Determined attackers with advanced tooling (e.g. Magisk with Zygisk modules) can bypass file-based and package-based checks. This package provides a reasonable baseline, not a guarantee.
+- **Certificate pinning is implemented in pure Dart** over a raw `SecureSocket`. It does not intercept traffic from native SDKs, WebViews, or third-party libraries that open their own connections.
+- **Screenshot protection on iOS** uses a `UITextField` overlay, which blocks the standard iOS screenshot API. It does not prevent screen recording via QuickTime or AirPlay mirroring.
+- **This package has no affiliation with any financial institution or payment network.** The internal `SecureBankKit` naming is a legacy implementation detail, not a certification.
+- **No active threat-intelligence feed.** New bypass techniques will not be addressed automatically; you must update the package manually.
 
 ---
 
@@ -44,20 +48,16 @@ Built with **Clean Architecture** principles and full native support for both **
 
 ### Installation
 
-Add to your `pubspec.yaml`:
-
 ```yaml
 dependencies:
-  flutter_security_suite:
-    git:
-      url: https://github.com/DeepakPal25/flutter_security_suite.git
+  flutter_security_suite: ^1.0.3
 ```
 
 ### Platform Setup
 
-**Android** - No additional setup required. Min SDK: 21.
+**Android** — No additional setup required. Min SDK: 23.
 
-**iOS** - Minimum deployment target: iOS 12.0. If using jailbreak detection with Cydia URL scheme check, add to your `Info.plist`:
+**iOS** — Minimum deployment target: iOS 12.0. If using jailbreak detection with the Cydia URL scheme check, add to your `Info.plist`:
 
 ```xml
 <key>LSApplicationQueriesSchemes</key>
@@ -100,6 +100,8 @@ if (status.isSecure) {
 
 ### Certificate Pinning
 
+Pin the **Subject Public Key Info (SPKI)** SHA-256 hash. This survives certificate renewals as long as the key pair stays the same.
+
 ```dart
 final kit = SecureBankKit.initialize(
   enablePinning: true,
@@ -107,40 +109,35 @@ final kit = SecureBankKit.initialize(
     'api.example.com': ['sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='],
   },
 );
+```
 
-final status = await kit.runSecurityCheck();
-print('Certificate valid: ${status.isCertificatePinningValid}');
+To extract the SPKI pin from a live host:
+
+```bash
+openssl s_client -connect api.example.com:443 -servername api.example.com 2>/dev/null \
+  | openssl x509 -pubkey -noout \
+  | openssl pkey -pubin -outform DER \
+  | openssl dgst -sha256 -binary \
+  | base64
 ```
 
 ### Screenshot Protection
 
 ```dart
-// Block screenshots and screen recording
 await kit.screenshotProtection.enable();
-
-// Re-enable screenshots
 await kit.screenshotProtection.disable();
 ```
 
 ### Secure Storage
 
 ```dart
-// Write encrypted data
 await kit.secureStorage.write(key: 'auth_token', value: 'jwt_abc123');
-
-// Read decrypted data
 final token = await kit.secureStorage.read(key: 'auth_token');
-
-// Delete a key
 await kit.secureStorage.delete(key: 'auth_token');
-
-// Clear all stored data
 await kit.secureStorage.deleteAll();
 ```
 
 ### Error Handling
-
-The plugin uses a type-safe `SecurityResult<T>` sealed class:
 
 ```dart
 final result = await someSecurityOperation();
@@ -150,10 +147,27 @@ result.fold(
   onFailure: (error) => print('Error: ${error.message}'),
 );
 
-// Or use convenience accessors
 if (result.isSuccess) {
   final value = result.dataOrNull;
 }
+```
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│   PUBLIC API (SecureBankKit)                 │  Consumer-facing facade
+├─────────────────────────────────────────────┤
+│   DOMAIN (Entities, UseCases, Repositories) │  Business logic & contracts
+├─────────────────────────────────────────────┤
+│   DATA (Datasources, Repository Impls)      │  Implementation layer
+├─────────────────────────────────────────────┤
+│   PLATFORM (MethodChannel Bridge)           │  Flutter ↔ Native bridge
+├─────────────────────────────────────────────┤
+│   CORE (Result types, Exceptions, Logger)   │  Shared utilities
+└─────────────────────────────────────────────┘
 ```
 
 ---
@@ -164,7 +178,7 @@ if (result.isSuccess) {
 
 **Android:**
 - Scans system paths for `su` binaries (`/sbin/su`, `/system/bin/su`, etc.)
-- Detects rooting apps (SuperSU, Magisk Manager, etc.)
+- Detects rooting apps via `PackageManager` (SuperSU, Magisk, etc.)
 - Checks build tags for `test-keys`
 
 **iOS:**
@@ -181,16 +195,13 @@ if (result.isSuccess) {
 
 **iOS:**
 - Detects debugger attachment via `sysctl` (P_TRACED flag)
-- Checks for `embedded.mobileprovision` file presence
+- `isAppStoreBuild()` checks for absence of `embedded.mobileprovision` (distinguishes App Store from TestFlight/dev builds)
 
 ### Secure Storage
 
-**Android:** Uses `EncryptedSharedPreferences` with:
-- Key encryption: AES-256-SIV
-- Value encryption: AES-256-GCM
+**Android:** `EncryptedSharedPreferences` — key encryption: AES-256-SIV, value encryption: AES-256-GCM
 
-**iOS:** Uses Keychain via `SecItem` API with:
-- Accessibility: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
+**iOS:** Keychain via `SecItem` API — accessibility: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`
 
 ---
 
@@ -201,39 +212,26 @@ flutter_security_suite/
 ├── lib/
 │   ├── flutter_security_suite.dart       # Main export
 │   ├── secure_bank_kit.dart              # Public API facade
-│   ├── core/
-│   │   ├── exceptions/                   # SecurityException hierarchy
-│   │   ├── result/                       # SecurityResult sealed class
-│   │   └── utils/                        # Logger utility
-│   ├── domain/
-│   │   ├── entities/                     # SecurityStatus entity
-│   │   ├── repositories/                 # 5 abstract repository contracts
-│   │   └── usecases/                     # 5 use cases
-│   ├── data/
-│   │   ├── datasources/                  # 5 datasource implementations
-│   │   └── repositories_impl/           # 5 repository implementations
+│   ├── core/                             # SecurityResult, exceptions, logger
+│   ├── domain/                           # Entities, use cases, repository contracts
+│   ├── data/                             # Datasource & repository implementations
 │   └── platform/
 │       └── method_channel_security.dart  # MethodChannel bridge
 ├── android/src/main/kotlin/              # Kotlin native handlers
 ├── ios/Classes/                          # Swift native handlers
 ├── example/                              # Demo application
-└── test/                                 # 11 test files (47 tests)
+└── test/                                 # 11 test files, 47 unit tests
 ```
 
 ---
 
 ## Testing
 
-Run all tests:
-
 ```bash
 flutter test
 ```
 
-**Coverage:**
-- **Platform layer** - MethodChannel mock tests for all method calls
-- **Domain layer** - UseCase tests with mocked repositories (success & failure paths)
-- **Data layer** - Repository implementation tests with mocked datasources
+Coverage includes platform (MethodChannel mocks), domain (use cases with mocked repositories), and data (repository impls with mocked datasources) layers — both success and failure paths.
 
 ---
 
@@ -242,24 +240,18 @@ flutter test
 | | Minimum |
 |---|---|
 | Flutter | >= 3.10.0 |
-| Dart SDK | >= 3.10.4 |
-| Android | API 21 (Lollipop) |
+| Dart SDK | >= 3.0.0 |
+| Android | API 23 (Marshmallow) |
 | iOS | 12.0 |
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Contributions and bug reports are welcome. Please open an issue before submitting a large pull request.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
