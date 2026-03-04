@@ -2,12 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.5 - 2026-03-04
+
+### Changed
+
+- Removed all third-party package references from README and CHANGELOG
+
 ## 1.0.4 - 2026-03-03
 
 ### Changed
 
 - Removed "enterprise-grade" marketing language from package description and README
-- Added honest **Alternatives** section comparing to freerasp (Talsec) and flutter_ios_security_suite
 - Added **Limitations** section documenting root-detection bypass vectors, Dart-only pinning scope, iOS screenshot gaps, and absence of active threat-intel feed
 - Fixed README installation snippet (was showing git URL instead of pub.dev dependency)
 - Fixed README SDK minimum version (was `3.10.4`, actual constraint is `3.0.0`)
