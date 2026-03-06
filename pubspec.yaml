@@ -10,10 +10,7 @@ topics:
   - encryption
   - root-detection
   - certificate-pinning
-  - storage
-  - emulator-detection
   - tamper-detection
-  - runtime-protection
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
