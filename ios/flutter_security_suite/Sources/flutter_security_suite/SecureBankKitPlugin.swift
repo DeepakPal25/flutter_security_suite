@@ -3,10 +3,14 @@ import UIKit
 
 public class SecureBankKitPlugin: NSObject, FlutterPlugin {
 
-    private let jailbreakHandler = JailbreakDetectionHandler()
-    private let screenshotHandler = ScreenshotHandler()
-    private let integrityHandler = AppIntegrityHandler()
-    private let storageHandler = SecureStorageHandler()
+    private let jailbreakHandler        = JailbreakDetectionHandler()
+    private let screenshotHandler       = ScreenshotHandler()
+    private let integrityHandler        = AppIntegrityHandler()
+    private let storageHandler          = SecureStorageHandler()
+    private let emulatorHandler         = EmulatorDetectionHandler()
+    private let recordingHandler        = ScreenRecordingDetectionHandler()
+    private let tamperHandler           = TamperDetectionHandler()
+    private let runtimeHandler          = RuntimeProtectionHandler()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -105,6 +109,22 @@ public class SecureBankKitPlugin: NSObject, FlutterPlugin {
                     details: nil
                 ))
             }
+
+        // ── Emulator Detection ──────────────────────────
+        case "emulator#isEmulator":
+            result(emulatorHandler.isEmulator())
+
+        // ── Screen Recording Detection ───────────────────
+        case "recording#isRecording":
+            result(recordingHandler.isScreenBeingRecorded())
+
+        // ── Tamper Detection ─────────────────────────────
+        case "tamper#isTampered":
+            result(tamperHandler.isTampered())
+
+        // ── Runtime Protection ───────────────────────────
+        case "runtime#isHooked":
+            result(runtimeHandler.isRuntimeHooked())
 
         default:
             result(FlutterMethodNotImplemented)

@@ -23,6 +23,16 @@ void main() {
               return false;
             case 'storage#read':
               return 'secret_value';
+            case 'emulator#isEmulator':
+              return false;
+            case 'recording#isRecording':
+              return true;
+            case 'tamper#isTampered':
+              return false;
+            case 'tamper#getSignatureHash':
+              return 'deadbeef1234';
+            case 'runtime#isHooked':
+              return false;
             default:
               return null;
           }
@@ -82,6 +92,37 @@ void main() {
     test('secureStorageDeleteAll sends correct method', () async {
       await sut.secureStorageDeleteAll();
       expect(log.single.method, 'storage#deleteAll');
+    });
+
+    test('isEmulator sends correct method and returns result', () async {
+      final result = await sut.isEmulator();
+      expect(result, isFalse);
+      expect(log.single.method, 'emulator#isEmulator');
+    });
+
+    test('isScreenBeingRecorded sends correct method and returns result',
+        () async {
+      final result = await sut.isScreenBeingRecorded();
+      expect(result, isTrue);
+      expect(log.single.method, 'recording#isRecording');
+    });
+
+    test('isTampered sends correct method and returns result', () async {
+      final result = await sut.isTampered();
+      expect(result, isFalse);
+      expect(log.single.method, 'tamper#isTampered');
+    });
+
+    test('getSignatureHash sends correct method and returns hash', () async {
+      final result = await sut.getSignatureHash();
+      expect(result, 'deadbeef1234');
+      expect(log.single.method, 'tamper#getSignatureHash');
+    });
+
+    test('isRuntimeHooked sends correct method and returns result', () async {
+      final result = await sut.isRuntimeHooked();
+      expect(result, isFalse);
+      expect(log.single.method, 'runtime#isHooked');
     });
   });
 }

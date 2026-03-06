@@ -4,9 +4,13 @@ import android.app.Activity
 import android.content.Context
 import androidx.annotation.NonNull
 import com.securebankkit.flutter_security_suite.handlers.AppIntegrityHandler
+import com.securebankkit.flutter_security_suite.handlers.EmulatorDetectionHandler
 import com.securebankkit.flutter_security_suite.handlers.RootDetectionHandler
+import com.securebankkit.flutter_security_suite.handlers.RuntimeProtectionHandler
+import com.securebankkit.flutter_security_suite.handlers.ScreenRecordingDetectionHandler
 import com.securebankkit.flutter_security_suite.handlers.ScreenshotHandler
 import com.securebankkit.flutter_security_suite.handlers.SecureStorageHandler
+import com.securebankkit.flutter_security_suite.handlers.TamperDetectionHandler
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -21,11 +25,15 @@ class SecureBankKitPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var context: Context
     private var activity: Activity? = null
 
-    // rootHandler requires Context; initialised in onAttachedToEngine.
+    // Handlers that require Context are initialised in onAttachedToEngine.
     private lateinit var rootHandler: RootDetectionHandler
-    private val screenshotHandler = ScreenshotHandler()
-    private val integrityHandler = AppIntegrityHandler()
-    private val storageHandler = SecureStorageHandler()
+    private val screenshotHandler         = ScreenshotHandler()
+    private val integrityHandler          = AppIntegrityHandler()
+    private val storageHandler            = SecureStorageHandler()
+    private val emulatorHandler           = EmulatorDetectionHandler()
+    private val screenRecordingHandler    = ScreenRecordingDetectionHandler()
+    private val tamperHandler             = TamperDetectionHandler()
+    private val runtimeHandler            = RuntimeProtectionHandler()
 
     override fun onAttachedToEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         context = binding.applicationContext
@@ -108,6 +116,29 @@ class SecureBankKitPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "storage#deleteAll" -> {
                 storageHandler.deleteAll(context)
                 result.success(null)
+            }
+
+            // ── Emulator Detection ───────────────────────
+            "emulator#isEmulator" -> {
+                result.success(emulatorHandler.isEmulator())
+            }
+
+            // ── Screen Recording Detection ────────────────
+            "recording#isRecording" -> {
+                result.success(screenRecordingHandler.isScreenBeingRecorded(context))
+            }
+
+            // ── Tamper Detection ──────────────────────────
+            "tamper#isTampered" -> {
+                result.success(tamperHandler.isTampered(context))
+            }
+            "tamper#getSignatureHash" -> {
+                result.success(tamperHandler.getSigningCertificateHash(context))
+            }
+
+            // ── Runtime Protection ────────────────────────
+            "runtime#isHooked" -> {
+                result.success(runtimeHandler.isRuntimeHooked())
             }
 
             else -> result.notImplemented()

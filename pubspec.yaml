@@ -1,6 +1,6 @@
 name: flutter_security_suite
-description: "Flutter plugin for mobile app security: root/jailbreak detection, certificate pinning, app integrity checks, screenshot protection, and encrypted secure storage."
-version: 1.0.5
+description: "Flutter plugin for mobile app security: root/jailbreak detection, emulator detection, screen recording detection, tamper detection, runtime protection, certificate pinning, app integrity, screenshot protection, and encrypted secure storage."
+version: 1.1.0
 homepage: https://github.com/DeepakPal25/flutter_security_suite
 repository: https://github.com/DeepakPal25/flutter_security_suite
 issue_tracker: https://github.com/DeepakPal25/flutter_security_suite/issues
@@ -11,6 +11,9 @@ topics:
   - root-detection
   - certificate-pinning
   - storage
+  - emulator-detection
+  - tamper-detection
+  - runtime-protection
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

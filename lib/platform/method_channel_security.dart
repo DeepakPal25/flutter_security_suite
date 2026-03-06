@@ -59,4 +59,36 @@ class MethodChannelSecurity {
   Future<void> secureStorageDeleteAll() async {
     await _channel.invokeMethod<void>('storage#deleteAll');
   }
+
+  // ── Emulator Detection ────────────────────────────
+
+  Future<bool> isEmulator() async {
+    final result = await _channel.invokeMethod<bool>('emulator#isEmulator');
+    return result ?? false;
+  }
+
+  // ── Screen Recording Detection ────────────────────
+
+  Future<bool> isScreenBeingRecorded() async {
+    final result = await _channel.invokeMethod<bool>('recording#isRecording');
+    return result ?? false;
+  }
+
+  // ── Tamper Detection ──────────────────────────────
+
+  Future<bool> isTampered() async {
+    final result = await _channel.invokeMethod<bool>('tamper#isTampered');
+    return result ?? true; // Fail secure: assume tampered on error.
+  }
+
+  Future<String?> getSignatureHash() async {
+    return _channel.invokeMethod<String>('tamper#getSignatureHash');
+  }
+
+  // ── Runtime Protection ────────────────────────────
+
+  Future<bool> isRuntimeHooked() async {
+    final result = await _channel.invokeMethod<bool>('runtime#isHooked');
+    return result ?? false;
+  }
 }
