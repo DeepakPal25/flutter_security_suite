@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 - 2026-03-07
+
+### Added
+
+- Emulator / simulator detection (Android: Build props + QEMU device files; iOS: `targetEnvironment(simulator)` + Simulator env vars)
+- Screen recording detection (Android: `DisplayManager` presentation display check; iOS: `UIScreen.isCaptured`)
+- Tamper detection (Android: APK signing certificate verification + `getSigningCertificateHash()`; iOS: bundle ID consistency + `_CodeSignature` directory check)
+- Runtime protection: Frida server port check, `/proc/self/maps` scan, Xposed files (Android); Frida dylib scan + env vars (iOS); debugger detection on both platforms
+- `SecurityStatus` gains 4 new fields: `isEmulator`, `isScreenBeingRecorded`, `isTampered`, `isRuntimeHooked`
+- `TamperDetection` sub-accessor on `SecureBankKit` exposes `getSignatureHash()` for one-time certificate pinning setup
+- 34 new unit tests (81 total, all passing)
+- Updated example app with status cards and new feature buttons
+
+
 ## 1.0.5 - 2026-03-04
 
 ### Changed
