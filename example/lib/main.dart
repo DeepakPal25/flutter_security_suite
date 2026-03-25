@@ -278,7 +278,7 @@ class _CheckChip extends StatelessWidget {
         style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600),
       ),
       side: BorderSide(color: color),
-      backgroundColor: color.withOpacity(0.08),
+      backgroundColor: color.withValues(alpha: 0.08),
       padding: const EdgeInsets.symmetric(horizontal: 4),
     );
   }

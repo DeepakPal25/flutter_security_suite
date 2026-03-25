@@ -36,7 +36,7 @@ void main() {
 
   test('returns Failure when validation fails', () async {
     when(() => mockRepo.validateCertificate(host: host, pins: pins)).thenAnswer(
-      (_) async => Failure(
+      (_) async => const Failure(
         CertificatePinningException(host: host, message: 'connection failed'),
       ),
     );

@@ -37,8 +37,8 @@ void main() {
 
   test('returns Failure on repository error', () async {
     when(() => mockRepo.isEmulator()).thenAnswer(
-      (_) async => Failure(
-        const PlatformSecurityException(
+      (_) async => const Failure(
+        PlatformSecurityException(
           platform: 'native',
           message: 'emulator check failed',
         ),

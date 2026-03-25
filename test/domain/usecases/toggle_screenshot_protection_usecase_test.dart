@@ -43,7 +43,7 @@ void main() {
 
   test('returns Failure on platform error', () async {
     when(() => mockRepo.enableProtection()).thenAnswer(
-      (_) async => Failure(
+      (_) async => const Failure(
         PlatformSecurityException(platform: 'native', message: 'no activity'),
       ),
     );

@@ -38,8 +38,8 @@ void main() {
 
     test('returns Failure on repository error', () async {
       when(() => mockRepo.isTampered()).thenAnswer(
-        (_) async => Failure(
-          const PlatformSecurityException(
+        (_) async => const Failure(
+          PlatformSecurityException(
             platform: 'native',
             message: 'tamper check failed',
           ),
@@ -72,4 +72,3 @@ void main() {
     });
   });
 }
-

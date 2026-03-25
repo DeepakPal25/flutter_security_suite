@@ -37,8 +37,8 @@ void main() {
 
   test('returns Failure on repository error', () async {
     when(() => mockRepo.isRuntimeHooked()).thenAnswer(
-      (_) async => Failure(
-        const PlatformSecurityException(
+      (_) async => const Failure(
+        PlatformSecurityException(
           platform: 'native',
           message: 'runtime protection check failed',
         ),
@@ -50,4 +50,3 @@ void main() {
     expect(result, isA<Failure<bool>>());
   });
 }
-

@@ -78,7 +78,7 @@ void main() {
 
     test('returns Failure on error', () async {
       when(() => mockRepo.deleteAll()).thenAnswer(
-        (_) async => Failure(SecureStorageException(message: 'wipe failed')),
+        (_) async => const Failure(SecureStorageException(message: 'wipe failed')),
       );
 
       final result = await sut.deleteAll();

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.1 - 2026-03-25
+
+### Fixed
+
+- Shortened pubspec description to comply with pub.dev 60–180 character guideline
+
 ## 1.1.0 - 2026-03-07
 
 ### Added
