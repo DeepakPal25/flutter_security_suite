@@ -42,7 +42,7 @@ A Flutter plugin for mobile app security — root/jailbreak detection, emulator 
 
 ```yaml
 dependencies:
-  flutter_security_suite: ^1.1.0
+  flutter_security_suite: ^1.1.1
 ```
 
 ### Platform Setup
