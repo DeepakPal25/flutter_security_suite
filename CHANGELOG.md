@@ -21,6 +21,10 @@ All notable changes to this project will be documented in this file.
 - Minimum SDK constraints raised to match what the code actually needs: Flutter `>=3.22.0`, Dart `>=3.4.0` (example app: Flutter `>=3.27.0`).
 - Android: added `androidx.biometric` dependency and the `DETECT_SCREEN_CAPTURE` permission (API 34+ screenshot detection).
 
+### Fixed
+- Android: release builds no longer fail in R8 with "Missing class" errors from Tink; the plugin now ships consumer ProGuard rules.
+- iOS: Swift Package Manager product renamed to `flutter-security-suite` so apps with SwiftPM enabled can resolve the plugin.
+
 ### Setup notes
 - Biometrics on Android require the host activity to extend `FlutterFragmentActivity`.
 - Biometrics on iOS require `NSFaceIDUsageDescription` in `Info.plist`.

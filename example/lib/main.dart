@@ -298,7 +298,9 @@ class _HomePageState extends State<HomePage> {
 
             // ── Action buttons ────────────────────────────────────────────────
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 180),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.4,
+              ),
               child: SingleChildScrollView(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
