@@ -11,6 +11,10 @@ public class SecureBankKitPlugin: NSObject, FlutterPlugin {
     private let recordingHandler        = ScreenRecordingDetectionHandler()
     private let tamperHandler           = TamperDetectionHandler()
     private let runtimeHandler          = RuntimeProtectionHandler()
+    private let antiTamperHandler       = AntiTamperHandler()
+    private let screenCaptureHandler    = ScreenCaptureHandler()
+    private let pasteboardHandler       = PasteboardHandler()
+    private let biometricHandler        = BiometricHandler()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -19,6 +23,12 @@ public class SecureBankKitPlugin: NSObject, FlutterPlugin {
         )
         let instance = SecureBankKitPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
+
+        let screenCaptureChannel = FlutterEventChannel(
+            name: "com.securebankkit/screen_capture_events",
+            binaryMessenger: registrar.messenger()
+        )
+        screenCaptureChannel.setStreamHandler(instance.screenCaptureHandler)
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -125,6 +135,69 @@ public class SecureBankKitPlugin: NSObject, FlutterPlugin {
         // ── Runtime Protection ───────────────────────────
         case "runtime#isHooked":
             result(runtimeHandler.isRuntimeHooked())
+
+        // ── Anti-Tamper ──────────────────────────────────
+        case "antitamper#isDebuggerAttached":
+            result(antiTamperHandler.isDebuggerAttached())
+
+        case "antitamper#hasInjectedLibraries":
+            result(antiTamperHandler.hasInjectedLibraries())
+
+        case "antitamper#denyDebugger":
+            result(antiTamperHandler.denyDebugger())
+
+        // ── Screen Capture Monitoring ────────────────────
+        case "screencapture#isCaptured":
+            result(screenCaptureHandler.isCaptured())
+
+        // ── Pasteboard Protection ────────────────────────
+        case "pasteboard#copy":
+            guard let args = call.arguments as? [String: Any],
+                  let value = args["value"] as? String,
+                  let expiresAfterMs = (args["expiresAfterMs"] as? NSNumber)?.doubleValue,
+                  expiresAfterMs > 0 else {
+                result(FlutterError(
+                    code: "INVALID_ARGS",
+                    message: "value and a positive expiresAfterMs are required",
+                    details: nil
+                ))
+                return
+            }
+            pasteboardHandler.copy(value: value, expiresAfterMs: expiresAfterMs)
+            result(nil)
+
+        case "pasteboard#clear":
+            let args = call.arguments as? [String: Any]
+            let onlyIfOwned = args?["onlyIfOwned"] as? Bool ?? true
+            result(pasteboardHandler.clear(onlyIfOwned: onlyIfOwned))
+
+        // ── Biometric Authentication ─────────────────────
+        case "biometric#availability":
+            result(biometricHandler.availability())
+
+        case "biometric#authenticate":
+            guard let args = call.arguments as? [String: Any],
+                  let reason = args["reason"] as? String,
+                  !reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                result(FlutterError(
+                    code: "INVALID_ARGS",
+                    message: "reason is required",
+                    details: nil
+                ))
+                return
+            }
+            biometricHandler.authenticate(
+                reason: reason,
+                allowDeviceCredential: args["allowDeviceCredential"] as? Bool ?? true,
+                cancelLabel: args["cancelLabel"] as? String
+            ) { outcome in
+                switch outcome {
+                case .finished(let authenticated):
+                    result(authenticated)
+                case .failed(let code, let message):
+                    result(FlutterError(code: code, message: message, details: nil))
+                }
+            }
 
         default:
             result(FlutterMethodNotImplemented)

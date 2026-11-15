@@ -1,20 +1,25 @@
 name: flutter_security_suite
-description: "Flutter security plugin with root/jailbreak and emulator checks, screen capture protection, tamper detection, runtime protection, certificate pinning, and encrypted storage."
-version: 1.1.1
+description: "Flutter security plugin: root/jailbreak and tamper detection, certificate pinning, biometrics, app lock, secure token storage, screen capture and clipboard protection."
+version: 1.2.0
 homepage: https://github.com/DeepakPal25/flutter_security_suite
 repository: https://github.com/DeepakPal25/flutter_security_suite
 issue_tracker: https://github.com/DeepakPal25/flutter_security_suite/issues
+documentation: https://github.com/DeepakPal25/flutter_security_suite#readme
 license: MIT
 topics:
   - security
-  - encryption
+  - biometrics
   - root-detection
   - certificate-pinning
   - tamper-detection
 
+# Throwaway self-signed localhost keys used only by the pinning tests.
+false_secrets:
+  - /test/fixtures/*.pem
+
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
 
 dependencies:
   flutter:
@@ -26,6 +31,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   mocktail: ^1.0.4
+  fake_async: ^1.3.0
 
 flutter:
   plugin:

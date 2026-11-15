@@ -1,5 +1,6 @@
 package com.securebankkit.flutter_security_suite_example
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FlutterFragmentActivity is required by BiometricPrompt.
+class MainActivity : FlutterFragmentActivity()

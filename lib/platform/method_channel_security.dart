@@ -9,8 +9,15 @@ class MethodChannelSecurity {
     'com.securebankkit/security',
   );
 
+  static const EventChannel _screenCaptureEvents = EventChannel(
+    'com.securebankkit/screen_capture_events',
+  );
+
   /// Visible for testing – allows injection of a mock channel.
   static MethodChannel get channel => _channel;
+
+  /// Visible for testing – the screen-capture event channel.
+  static EventChannel get screenCaptureEventChannel => _screenCaptureEvents;
 
   // ── Root / Jailbreak ─────────────────────────────────────────
 
@@ -89,6 +96,88 @@ class MethodChannelSecurity {
 
   Future<bool> isRuntimeHooked() async {
     final result = await _channel.invokeMethod<bool>('runtime#isHooked');
+    return result ?? false;
+  }
+
+  // ── Anti-Tamper ───────────────────────────────────
+
+  Future<bool> isDebuggerAttached() async {
+    final result = await _channel.invokeMethod<bool>(
+      'antitamper#isDebuggerAttached',
+    );
+    return result ?? false;
+  }
+
+  Future<bool> hasInjectedLibraries() async {
+    final result = await _channel.invokeMethod<bool>(
+      'antitamper#hasInjectedLibraries',
+    );
+    return result ?? false;
+  }
+
+  /// Returns `true` when debugger attachment is (now) denied for the process.
+  Future<bool> denyDebuggerAttachment() async {
+    final result = await _channel.invokeMethod<bool>('antitamper#denyDebugger');
+    return result ?? false;
+  }
+
+  // ── Screen Capture Monitoring ─────────────────────
+
+  Future<bool> isScreenCaptured() async {
+    final result = await _channel.invokeMethod<bool>('screencapture#isCaptured');
+    return result ?? false;
+  }
+
+  /// Raw native screen-capture events. Each event is a map such as
+  /// `{'type': 'captureChanged', 'isCaptured': true}` or
+  /// `{'type': 'screenshot'}`.
+  Stream<dynamic> screenCaptureEvents() =>
+      _screenCaptureEvents.receiveBroadcastStream();
+
+  // ── Pasteboard Protection ─────────────────────────
+
+  Future<void> pasteboardCopy({
+    required String value,
+    required int expiresAfterMs,
+  }) async {
+    await _channel.invokeMethod<void>('pasteboard#copy', {
+      'value': value,
+      'expiresAfterMs': expiresAfterMs,
+    });
+  }
+
+  /// Clears the clipboard. When [onlyIfOwned] is `true` the clipboard is only
+  /// cleared if it still holds the value last written by this plugin.
+  /// Returns `true` when the clipboard was cleared.
+  Future<bool> pasteboardClear({bool onlyIfOwned = false}) async {
+    final result = await _channel.invokeMethod<bool>('pasteboard#clear', {
+      'onlyIfOwned': onlyIfOwned,
+    });
+    return result ?? false;
+  }
+
+  // ── Biometric Authentication ──────────────────────
+
+  /// Returns a map: `{'available': bool, 'type': String, 'reason': String?}`.
+  Future<Map<String, dynamic>> biometricAvailability() async {
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+      'biometric#availability',
+    );
+    return result ?? const <String, dynamic>{};
+  }
+
+  /// Returns `true` on success and `false` when the user cancelled.
+  /// Throws a [PlatformException] for every other failure.
+  Future<bool> biometricAuthenticate({
+    required String reason,
+    required bool allowDeviceCredential,
+    String? cancelLabel,
+  }) async {
+    final result = await _channel.invokeMethod<bool>('biometric#authenticate', {
+      'reason': reason,
+      'allowDeviceCredential': allowDeviceCredential,
+      if (cancelLabel != null) 'cancelLabel': cancelLabel,
+    });
     return result ?? false;
   }
 }

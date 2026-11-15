@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.2.0 - 2026-11-15
+
+### Added
+- **Anti-tamper detection** (`kit.antiTamper`): debugger detection, injected-library detection (Frida, Substrate, Xposed, …) and `denyDebuggerAttachment()` (iOS `PT_DENY_ATTACH`).
+- **Screen capture monitoring** (`kit.screenCapture`): `isCaptured()` plus `events`, `onCaptureChanged` and `onScreenshot` streams for recording / mirroring changes and screenshots.
+- **Pasteboard protection** (`kit.pasteboard`): local-only, auto-expiring clipboard copy and `clear({onlyIfOwned})`.
+- **Biometric authentication** (`kit.biometrics`): `checkAvailability()` and `authenticate()` with optional device-credential fallback and typed `BiometricException` error codes.
+- **Secure token storage** (`kit.tokenStorage`) and **token expiry management** (`kit.tokenExpiry`) with de-duplicated `refreshIfNeeded()`.
+- **SessionManager** (`kit.createSessionManager`): inactivity timeout that can wipe tokens on expiry.
+- **AppLockManager** (`kit.createAppLockManager`): locks the app after a background grace period and unlocks with biometrics.
+- **CertificatePinner** / `kit.certificatePinning.pinner()` and `createHttpClient()` for SPKI public-key pinning on every connection.
+- `SecurityLogger.redact()` and `SecurityLogger.sanitize()`.
+
+### Changed
+- `SecurityLogger` is silent in release builds unless enabled with `enable(allowInRelease: true)`.
+- Certificate pin validation is stricter: malformed or empty pin lists throw `ArgumentError` instead of silently never matching.
+- Minimum SDK constraints raised to match what the code actually needs: Flutter `>=3.22.0`, Dart `>=3.4.0` (example app: Flutter `>=3.27.0`).
+- Android: added `androidx.biometric` dependency and the `DETECT_SCREEN_CAPTURE` permission (API 34+ screenshot detection).
+
+### Setup notes
+- Biometrics on Android require the host activity to extend `FlutterFragmentActivity`.
+- Biometrics on iOS require `NSFaceIDUsageDescription` in `Info.plist`.
+
 ## 1.1.1 - 2026-03-25
 
 ### Fixed

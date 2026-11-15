@@ -1,10 +1,11 @@
 Pod::Spec.new do |s|
   s.name             = 'flutter_security_suite'
-  s.version          = '1.1.1'
-  s.summary          = 'Flutter plugin for mobile app security: root/jailbreak detection, certificate pinning, screenshot protection, and secure storage.'
+  s.version          = '1.2.0'
+  s.summary          = 'Flutter plugin for mobile app security: jailbreak and tamper detection, certificate pinning, biometrics, screen capture and clipboard protection, and secure storage.'
   s.description      = <<-DESC
-SecureBankKit provides root/jailbreak detection, certificate pinning,
-screenshot protection, app integrity checks, and secure storage for Flutter apps.
+SecureBankKit provides root/jailbreak, emulator, tamper and debugger detection,
+certificate pinning, screen capture monitoring, screenshot and clipboard protection,
+biometric authentication, app integrity checks, and secure storage for Flutter apps.
                        DESC
   s.homepage         = 'https://github.com/DeepakPal25/flutter_security_suite'
   s.license          = { :type => 'MIT', :file => '../LICENSE' }

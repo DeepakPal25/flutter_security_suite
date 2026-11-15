@@ -58,3 +58,54 @@ class SecureStorageException extends SecurityException {
   @override
   String toString() => 'SecureStorageException(key=$key): $message';
 }
+
+/// Thrown when biometric authentication cannot be performed or fails.
+///
+/// [code] is one of the `BiometricException.*` constants.
+class BiometricException extends SecurityException {
+  static const String notAvailable = 'BIOMETRIC_NOT_AVAILABLE';
+  static const String notEnrolled = 'BIOMETRIC_NOT_ENROLLED';
+  static const String lockedOut = 'BIOMETRIC_LOCKED_OUT';
+  static const String passcodeNotSet = 'BIOMETRIC_PASSCODE_NOT_SET';
+  static const String noActivity = 'BIOMETRIC_NO_ACTIVITY';
+  static const String inProgress = 'BIOMETRIC_IN_PROGRESS';
+  static const String invalidArguments = 'BIOMETRIC_INVALID_ARGS';
+  static const String failed = 'BIOMETRIC_ERROR';
+
+  const BiometricException({
+    required super.message,
+    super.code = failed,
+    super.originalError,
+  });
+
+  @override
+  String toString() => 'BiometricException($code): $message';
+}
+
+/// Thrown when token storage / refresh operations fail.
+class TokenException extends SecurityException {
+  static const String invalidToken = 'TOKEN_INVALID';
+  static const String refreshFailed = 'TOKEN_REFRESH_FAILED';
+  static const String noRefreshToken = 'TOKEN_NO_REFRESH_TOKEN';
+
+  const TokenException({
+    required super.message,
+    super.code = 'TOKEN_ERROR',
+    super.originalError,
+  });
+
+  @override
+  String toString() => 'TokenException($code): $message';
+}
+
+/// Thrown when an argument supplied to a security API is invalid.
+class InvalidArgumentSecurityException extends SecurityException {
+  const InvalidArgumentSecurityException({
+    required super.message,
+    super.code = 'INVALID_ARGUMENT',
+    super.originalError,
+  });
+
+  @override
+  String toString() => 'InvalidArgumentSecurityException: $message';
+}

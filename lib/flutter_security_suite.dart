@@ -13,10 +13,25 @@ library;
 
 // Core
 export 'core/exceptions/security_exception.dart';
+export 'core/network/certificate_pinner.dart';
 export 'core/result/security_result.dart';
+export 'core/utils/logger.dart';
 
 // Domain entities
+export 'domain/entities/anti_tamper_status.dart';
+export 'domain/entities/biometric_availability.dart';
+export 'domain/entities/screen_capture_event.dart';
 export 'domain/entities/security_status.dart';
+
+// Domain contracts needed to use the managers stand-alone
+export 'domain/repositories/biometric_repository.dart';
+export 'domain/repositories/secure_storage_repository.dart';
+
+// Managers
+export 'managers/app_lock_manager.dart';
+export 'managers/secure_token_storage.dart';
+export 'managers/session_manager.dart';
+export 'managers/token_expiry_manager.dart';
 
 // Public facade
 export 'secure_bank_kit.dart';

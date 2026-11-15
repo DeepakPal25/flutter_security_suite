@@ -1,6 +1,6 @@
 # flutter_security_suite
 
-A Flutter plugin for mobile app security — root/jailbreak detection, emulator detection, screen recording detection, tamper detection, runtime protection, certificate pinning, app integrity, screenshot protection, and encrypted secure storage. Native implementations for Android (Kotlin) and iOS (Swift).
+A Flutter plugin for mobile app security — root/jailbreak, emulator, tamper and debugger detection, runtime protection, certificate (public-key) pinning, screen capture monitoring and screenshot protection, clipboard protection, biometric authentication with app lock, session timeout, and encrypted token storage. Native implementations for Android (Kotlin) and iOS (Swift).
 
 [![pub.dev](https://img.shields.io/pub/v/flutter_security_suite.svg)](https://pub.dev/packages/flutter_security_suite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -21,6 +21,13 @@ A Flutter plugin for mobile app security — root/jailbreak detection, emulator 
 | App Integrity | Debug flag & installer validation | Debugger detection via `sysctl` |
 | Screenshot Protection | `FLAG_SECURE` window flag | Secure `UITextField` overlay |
 | Secure Storage | EncryptedSharedPreferences (AES-256) | iOS Keychain (`SecItem` API) |
+| **Anti-Tamper Detection** | `Debug.isDebuggerConnected`, `TracerPid`, `/proc/self/maps` scan | `sysctl` `P_TRACED`, dyld image scan, `PT_DENY_ATTACH` |
+| **Screen Capture Monitoring** | Presentation displays + screenshot callback (API 34+) | `UIScreen.capturedDidChange` + screenshot notification |
+| **Pasteboard Protection** | `EXTRA_IS_SENSITIVE` (API 33+) + timed clear | `UIPasteboard` `localOnly` + `expirationDate` |
+| **Biometric Authentication** | `BiometricPrompt` | `LAContext` (Face ID / Touch ID / passcode) |
+| **Token Storage & Expiry** | Built on Secure Storage | Built on Secure Storage |
+| **Session Manager / App Lock** | Dart (inactivity timer, lifecycle observer) | Dart (inactivity timer, lifecycle observer) |
+| **Redacting Logger** | `SecurityLogger.redact()` — off in release builds | same |
 
 ---
 
@@ -42,12 +49,20 @@ A Flutter plugin for mobile app security — root/jailbreak detection, emulator 
 
 ```yaml
 dependencies:
-  flutter_security_suite: ^1.1.1
+  flutter_security_suite: ^1.2.0
 ```
 
 ### Platform Setup
 
-**Android** — No additional setup required. Min SDK: 23.
+**Android** — Min SDK: 23. No setup is needed unless you use biometrics (or `AppLockManager`), in which case your activity must extend `FlutterFragmentActivity`:
+
+```kotlin
+import io.flutter.embedding.android.FlutterFragmentActivity
+
+class MainActivity : FlutterFragmentActivity()
+```
+
+The plugin declares the `DETECT_SCREEN_CAPTURE` permission; screenshot events are only delivered on Android 14 (API 34) and newer.
 
 **iOS** — Minimum deployment target: iOS 12.0. For jailbreak detection with the Cydia URL scheme, add to `Info.plist`:
 
@@ -56,6 +71,13 @@ dependencies:
 <array>
     <string>cydia</string>
 </array>
+```
+
+For Face ID (biometrics / app lock), also add:
+
+```xml
+<key>NSFaceIDUsageDescription</key>
+<string>Unlock the app with Face ID.</string>
 ```
 
 ---
@@ -166,6 +188,126 @@ openssl s_client -connect api.example.com:443 -servername api.example.com 2>/dev
   | openssl pkey -pubin -outform DER \
   | openssl dgst -sha256 -binary \
   | base64
+```
+
+To actually enforce the pins on your traffic, use the pinned `HttpClient` (a `SecurityContext` passed to `initialize` is reused):
+
+```dart
+final client = kit.certificatePinning.createHttpClient(
+  rejectUnpinnedHosts: true, // optional: block hosts with no pins at all
+);
+
+// One-off check of a host against its configured pins:
+final ok = await kit.certificatePinning.validate('api.example.com');
+```
+
+Notes:
+
+- `dart:io` only exposes the **leaf** certificate, so pins must be leaf pins — always ship a backup pin for your next key.
+- Connections through an HTTP proxy tunnel are refused for pinned hosts.
+- Malformed pins or an empty pin list throw `ArgumentError` instead of silently never matching.
+- `pinningMode: PinningMode.certificate` pins the whole certificate instead (breaks on every renewal).
+
+### Anti-Tamper Detection
+
+```dart
+final result = await kit.antiTamper.check();
+result.fold(
+  onSuccess: (status) {
+    if (status.isCompromised) {
+      // status.isDebuggerAttached / status.hasInjectedLibraries
+    }
+  },
+  onFailure: (e) => print(e.message),
+);
+
+// iOS: ask the kernel to refuse debugger attachment (no-op in debug builds).
+await kit.antiTamper.denyDebuggerAttachment();
+```
+
+### Screen Capture Monitoring
+
+```dart
+final sub = kit.screenCapture.onCaptureChanged.listen((isCaptured) {
+  // show / hide a privacy overlay
+});
+kit.screenCapture.onScreenshot.listen((_) => print('screenshot taken'));
+
+final captured = await kit.screenCapture.isCaptured();
+
+await sub.cancel(); // in dispose()
+```
+
+### Pasteboard Protection
+
+```dart
+await kit.pasteboard.copy(
+  accountNumber,
+  expiresAfter: const Duration(seconds: 30), // default: 60 s
+);
+await kit.pasteboard.clear(onlyIfOwned: true);
+```
+
+On iOS the value is local-only (no Universal Clipboard) and expires natively. On Android the clip is flagged sensitive and cleared by a timer; Android 10+ only lets the foreground app touch the clipboard, so the clear may be skipped while the app is in the background.
+
+### Biometric Authentication
+
+```dart
+final availability = await kit.biometrics.checkAvailability();
+
+final result = await kit.biometrics.authenticate(
+  reason: 'Confirm the transfer',
+  allowDeviceCredential: true, // passcode / PIN fallback
+);
+result.fold(
+  onSuccess: (authenticated) {/* false = user cancelled */},
+  onFailure: (e) {/* e.code: BIOMETRIC_NOT_AVAILABLE, BIOMETRIC_LOCKED_OUT, … */},
+);
+```
+
+### Tokens, Sessions and App Lock
+
+```dart
+await kit.tokenStorage.saveTokens(accessToken: access, refreshToken: refresh);
+await kit.tokenExpiry.setExpiresIn(const Duration(minutes: 15));
+
+// Refreshes only when (nearly) expired; concurrent callers share one refresh.
+final token = await kit.tokenExpiry.refreshIfNeeded(
+  (refreshToken) async {
+    final r = await api.refresh(refreshToken!);
+    return RefreshedTokens(
+      accessToken: r.accessToken,
+      refreshToken: r.refreshToken,
+      expiresAt: r.expiresAt,
+    );
+  },
+  buffer: const Duration(minutes: 1),
+);
+
+// Inactivity timeout — wipes tokens when it fires.
+final session = kit.createSessionManager(timeout: const Duration(minutes: 5));
+session.onSessionExpired.listen((_) => goToLogin());
+session.startSession();
+session.recordActivity(); // call on user interaction
+
+// Lock after 30 s in the background, unlock with biometrics.
+final appLock = kit.createAppLockManager(
+  gracePeriod: const Duration(seconds: 30),
+  reason: 'Unlock to continue',
+)..start();
+appLock.lockStateChanges.listen((locked) {/* show lock screen */});
+await appLock.unlock();
+```
+
+Dispose both managers (`dispose()`) when you are done with them.
+
+### Logging and Redaction
+
+Logging is off by default and stays off in release builds unless you call `SecurityLogger.enable(allowInRelease: true)`.
+
+```dart
+SecurityLogger.redact('4111111111111111', visibleEnd: 4); // ****1111
+SecurityLogger.redact(null);                              // null
 ```
 
 ### Screenshot Protection
@@ -292,18 +434,19 @@ flutter_security_suite/
 ├── lib/
 │   ├── flutter_security_suite.dart        # Main export
 │   ├── secure_bank_kit.dart               # Public API facade
-│   ├── core/                              # SecurityResult, exceptions, logger
+│   ├── core/                              # SecurityResult, exceptions, logger, CertificatePinner
+│   ├── managers/                          # Token storage / expiry, session, app lock
 │   ├── domain/
 │   │   ├── entities/security_status.dart  # SecurityStatus (7 fields)
-│   │   ├── repositories/                  # 9 repository contracts
-│   │   └── usecases/                      # 9 use cases
+│   │   ├── repositories/                  # 13 repository contracts
+│   │   └── usecases/                      # 13 use cases
 │   ├── data/
-│   │   ├── datasources/                   # 9 datasources
-│   │   └── repositories_impl/             # 9 repository implementations
+│   │   ├── datasources/                   # 13 datasources
+│   │   └── repositories_impl/             # 13 repository implementations
 │   └── platform/
 │       └── method_channel_security.dart   # MethodChannel bridge
-├── android/src/main/kotlin/               # 8 Kotlin native handlers
-├── ios/.../Sources/                       # 8 Swift native handlers
+├── android/src/main/kotlin/               # 12 Kotlin native handlers
+├── ios/.../Sources/                       # 12 Swift native handlers
 ├── example/                               # Demo application
 └── test/                                  # Unit tests
 ```
@@ -324,8 +467,8 @@ Tests cover platform (MethodChannel mocks), domain (use cases with mocked reposi
 
 | | Minimum |
 |---|---|
-| Flutter | >= 3.10.0 |
-| Dart SDK | >= 3.0.0 |
+| Flutter | >= 3.22.0 (example app: >= 3.27.0) |
+| Dart SDK | >= 3.4.0 |
 | Android | API 23 (Marshmallow) |
 | iOS | 12.0 |
 
