@@ -27,6 +27,8 @@ A Flutter plugin for mobile app security — root/jailbreak, emulator, tamper an
 | **Biometric Authentication** | `BiometricPrompt` | `LAContext` (Face ID / Touch ID / passcode) |
 | **Token Storage & Expiry** | Built on Secure Storage | Built on Secure Storage |
 | **Session Manager / App Lock** | Dart (inactivity timer, lifecycle observer) | Dart (inactivity timer, lifecycle observer) |
+| **PIN Lockout (persistent)** | Salted SHA-256 hash + persisted attempt/cooldown counters | same |
+| **App-Switcher Privacy Cover** | Recents-preview cover on background | Hides content from the iOS app-switcher snapshot |
 | **Redacting Logger** | `SecurityLogger.redact()` — off in release builds | same |
 | **String Obfuscation** | SHA-256 keystream XOR for embedded secrets (pure Dart) | same |
 | **Build Hardening Status** | Reports release/debug and whether symbols look obfuscated | same |
@@ -210,6 +212,17 @@ Notes:
 - Malformed pins or an empty pin list throw `ArgumentError` instead of silently never matching.
 - `pinningMode: PinningMode.certificate` pins the whole certificate instead (breaks on every renewal).
 
+**Which hosts to pin — and which not to.** Pin only backends whose key you control, such as your own API. **Do not pin Firebase, Google, or other third-party hosts:** they rotate certificates and keys on their own schedule, so a pin there will eventually hard-fail your app in production with no way to recover remotely. By default unpinned hosts are allowed through normal TLS (`rejectUnpinnedHosts: false`), so you can pin `api.yourbank.com` while Firebase/Analytics/Crashlytics traffic keeps working untouched. Only set `rejectUnpinnedHosts: true` if you pin *every* host your app talks to. For the hosts you do pin, always configure a **backup pin** (the SPKI of your next key, generated ahead of time) so a planned key rotation doesn't require an app update:
+
+```dart
+certificatePins: {
+  'api.yourbank.com': [
+    'sha256/CURRENT_KEY_SPKI=', // live key
+    'sha256/NEXT_KEY_SPKI=',    // pre-provisioned backup for rotation
+  ],
+},
+```
+
 ### Anti-Tamper Detection
 
 ```dart
@@ -303,9 +316,50 @@ await appLock.unlock();
 
 Dispose both managers (`dispose()`) when you are done with them.
 
+### PIN Lockout
+
+A persistent app PIN with brute-force protection. The PIN is stored only as a per-PIN salted SHA-256 hash; after 5 wrong attempts, verification is refused for a one-minute cooldown. The failed-attempt count **and** the cooldown deadline are persisted in secure storage, so force-quitting and relaunching the app cannot reset them.
+
+```dart
+final pin = kit.createPinLockManager(
+  maxAttempts: 5,
+  lockoutDuration: const Duration(minutes: 1),
+  minPinLength: 4,
+);
+
+await pin.setPin('1357'); // stores a salted hash, never the PIN
+
+final result = await pin.verifyPin(entered);
+result.fold(
+  onSuccess: (v) {
+    if (v.verified) {
+      // unlocked
+    } else if (v.isLockedOut) {
+      showMessage('Try again in ${v.retryAfter().inSeconds}s');
+    } else {
+      showMessage('${v.remainingAttempts} attempts left');
+    }
+  },
+  onFailure: (e) => showError(e), // e.code == AppLockException.notConfigured, etc.
+);
+```
+
+### App-Switcher Privacy Cover
+
+`PrivacyGuard` overlays an opaque cover the instant the app leaves the foreground, hiding sensitive content from the **iOS app-switcher snapshot** (and the Android recents preview). iOS takes that snapshot while the app is merely *inactive*, which neither `FLAG_SECURE` nor the iOS screenshot overlay covers — this widget does.
+
+```dart
+MaterialApp(
+  builder: (context, child) => PrivacyGuard(child: child!),
+  home: const HomePage(),
+);
+```
+
+Pass your own `cover:` (e.g. a branded splash) for a polished switcher preview; the default is an opaque panel with a lock glyph.
+
 ### Logging and Redaction
 
-Logging is off by default and stays off in release builds unless you call `SecurityLogger.enable(allowInRelease: true)`.
+Logging is off by default and stays off in release builds unless you call `SecurityLogger.enable(allowInRelease: true)` — so a shipped app writes nothing to the device log unless you opt in. Even when enabled, every line is passed through `sanitize()` first, which scrubs JWTs, `Bearer`/`Basic` tokens, `password`/`token`/`pin`/`otp`/`cvv` key-value pairs and 13–19 digit card numbers before anything reaches `developer.log`. The recommended production setting is to leave it disabled (the default); turn it on only for debugging, and never ship `allowInRelease: true`.
 
 ```dart
 SecurityLogger.redact('4111111111111111', visibleEnd: 4); // ****1111

@@ -98,6 +98,29 @@ class TokenException extends SecurityException {
   String toString() => 'TokenException($code): $message';
 }
 
+/// Thrown for app-lock / PIN operations.
+///
+/// [code] is one of the `AppLockException.*` constants.
+class AppLockException extends SecurityException {
+  /// No PIN has been set yet, so it cannot be verified.
+  static const String notConfigured = 'APP_LOCK_NOT_CONFIGURED';
+
+  /// Too many wrong attempts; verification is temporarily refused.
+  static const String lockedOut = 'APP_LOCK_LOCKED_OUT';
+
+  /// The supplied PIN is shorter than the configured minimum length.
+  static const String weakPin = 'APP_LOCK_WEAK_PIN';
+
+  const AppLockException({
+    required super.message,
+    super.code = 'APP_LOCK_ERROR',
+    super.originalError,
+  });
+
+  @override
+  String toString() => 'AppLockException($code): $message';
+}
+
 /// Thrown when an argument supplied to a security API is invalid.
 class InvalidArgumentSecurityException extends SecurityException {
   const InvalidArgumentSecurityException({

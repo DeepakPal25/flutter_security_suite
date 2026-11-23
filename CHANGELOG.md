@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.4.0 - 2026-11-24
+
+### Added
+- **PIN lockout with persistent brute-force protection** (`kit.createPinLockManager`): set/verify an app PIN that is stored only as a per-PIN salted SHA-256 hash (never in plain text). After `maxAttempts` (default 5) consecutive wrong tries, verification is refused for `lockoutDuration` (default 1 minute). The failed-attempt counter **and** the lockout deadline are both persisted in secure storage, so force-quitting and relaunching the app cannot reset them or bypass the cooldown. Exposes `PinVerification` / `PinLockoutState` (with `retryAfter()`) and `AppLockException` error codes (`weakPin`, `notConfigured`, `lockedOut`). Constant-time hash comparison; pure Dart over the injected secure storage.
+- **`PrivacyGuard` widget**: overlays an opaque cover over your UI the moment the app becomes inactive/backgrounded, hiding sensitive content from the **iOS app-switcher snapshot** (and the Android recents preview) — which `FLAG_SECURE` and the iOS screenshot overlay do not cover. Ships a theme-independent `PrivacyCover` default; wrap below `MaterialApp` via `MaterialApp.builder`.
+
 ## 1.3.0 - 2026-11-23
 
 ### Added

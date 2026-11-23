@@ -35,6 +35,7 @@ import 'domain/entities/obfuscation_status.dart';
 import 'domain/entities/screen_capture_event.dart';
 import 'domain/entities/security_status.dart';
 import 'domain/repositories/biometric_repository.dart';
+import 'domain/repositories/secure_storage_repository.dart';
 import 'domain/usecases/biometric_auth_usecase.dart';
 import 'domain/usecases/check_anti_tamper_usecase.dart';
 import 'domain/usecases/check_app_integrity_usecase.dart';
@@ -50,6 +51,7 @@ import 'domain/usecases/toggle_screenshot_protection_usecase.dart';
 import 'domain/usecases/validate_certificate_usecase.dart';
 import 'managers/app_lock_manager.dart';
 import 'managers/build_hardening_inspector.dart';
+import 'managers/pin_lock_manager.dart';
 import 'managers/secure_token_storage.dart';
 import 'managers/string_obfuscator.dart';
 import 'managers/session_manager.dart';
@@ -115,6 +117,7 @@ class SecureBankKit {
   final TokenExpiryManager tokenExpiry;
 
   final BiometricRepository _biometricRepository;
+  final SecureStorageRepository _storageRepository;
 
   SecureBankKit._({
     required bool enableRootDetection,
@@ -139,11 +142,13 @@ class SecureBankKit {
     required PasteboardUseCase pasteboardUseCase,
     required BiometricAuthUseCase biometricAuth,
     required BiometricRepository biometricRepository,
+    required SecureStorageRepository storageRepository,
     required this.tokenStorage,
     required this.tokenExpiry,
     required PinningMode pinningMode,
     required SecurityContext? pinningSecurityContext,
   }) : _biometricRepository = biometricRepository,
+       _storageRepository = storageRepository,
        _enableRootDetection = enableRootDetection,
        _enablePinning = enablePinning,
        _enableAppIntegrity = enableAppIntegrity,
@@ -289,6 +294,7 @@ class SecureBankKit {
       pasteboardUseCase: pasteboardUc,
       biometricAuth: biometricAuth,
       biometricRepository: biometricRepo,
+      storageRepository: storageRepo,
       tokenStorage: tokenStorage,
       tokenExpiry: tokenExpiry,
       pinningMode: pinningMode,
@@ -326,6 +332,29 @@ class SecureBankKit {
     lockOnStart: lockOnStart,
     reason: reason,
     allowDeviceCredential: allowDeviceCredential,
+  );
+
+  /// Creates a [PinLockManager] backed by this kit's secure storage.
+  ///
+  /// It stores only a salted SHA-256 hash of the PIN and enforces a persistent
+  /// brute-force lockout ([maxAttempts] wrong tries, then a [lockoutDuration]
+  /// cooldown) whose state survives an app restart. Pair it with
+  /// [createAppLockManager] (call `forceUnlock()` on a verified PIN) to offer a
+  /// PIN fallback when biometrics are unavailable.
+  ///
+  /// Use a distinct [namespace] to keep independent PINs (e.g. an app-unlock
+  /// PIN and a transaction PIN) from colliding.
+  PinLockManager createPinLockManager({
+    String namespace = 'sbk',
+    int maxAttempts = 5,
+    Duration lockoutDuration = const Duration(minutes: 1),
+    int minPinLength = 4,
+  }) => PinLockManager(
+    _storageRepository,
+    namespace: namespace,
+    maxAttempts: maxAttempts,
+    lockoutDuration: lockoutDuration,
+    minPinLength: minPinLength,
   );
 
   /// Runs all enabled security checks and returns a [SecurityStatus].

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'flutter_security_suite'
-  s.version          = '1.3.0'
+  s.version          = '1.4.0'
   s.summary          = 'Flutter plugin for mobile app security: jailbreak and tamper detection, certificate pinning, biometrics, screen capture and clipboard protection, and secure storage.'
   s.description      = <<-DESC
 SecureBankKit provides root/jailbreak, emulator, tamper and debugger detection,

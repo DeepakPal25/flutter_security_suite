@@ -110,7 +110,7 @@ class SecureTokenStorage {
   Future<SecurityResult<String?>> _read(String key) async {
     try {
       final result = await _storage.read(key: key);
-      return result.fold(
+      return await result.fold(
         onSuccess: (value) =>
             Success(value == null || value.isEmpty ? null : value),
         onFailure: (error) => Failure(error),

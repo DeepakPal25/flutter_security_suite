@@ -16,6 +16,10 @@ class SecureBankKitDemo extends StatelessWidget {
         colorSchemeSeed: Colors.indigo,
         useMaterial3: true,
       ),
+      // PrivacyGuard covers the UI the moment the app goes inactive, so the
+      // iOS app-switcher snapshot (and Android recents preview) never show
+      // sensitive content. Wrapped below MaterialApp via `builder`.
+      builder: (context, child) => PrivacyGuard(child: child!),
       home: const HomePage(),
     );
   }
@@ -36,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<ScreenCaptureEvent>? _captureSub;
   late final SessionManager _session;
   late final AppLockManager _appLock;
+  late final PinLockManager _pinLock;
 
   @override
   void initState() {
@@ -48,7 +53,22 @@ class _HomePageState extends State<HomePage> {
       enableTamperDetection: true,
       enableRuntimeProtection: true,
       enableLogging: true,
+      // Pin ONLY backends you control. Unpinned hosts (Firebase, Google, …)
+      // pass through normal TLS, so pinning here never breaks their traffic.
+      // publicKey mode (the default) survives certificate renewals.
+      enablePinning: true,
+      certificatePins: const {
+        // Demo value — replace with your backend's real SPKI SHA-256 pins
+        // (keep a backup pin for the next key rotation).
+        'api.example.com': [
+          'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+        ],
+      },
     );
+
+    // Persistent PIN lockout: 5 wrong tries → 1-minute cooldown that
+    // survives a force-quit. The PIN is stored only as a salted SHA-256 hash.
+    _pinLock = _kit.createPinLockManager();
 
     _captureSub = _kit.screenCapture.events.listen(
       (event) => _addLog(
@@ -261,6 +281,53 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ── Certificate pinning ────────────────────────────────────────────────────
+
+  Future<void> _validatePinning() async {
+    const host = 'api.example.com';
+    _addLog('▶ Validating certificate pin for $host…');
+    final result = await _kit.certificatePinning.validate(host);
+    result.fold(
+      onSuccess: (ok) => _addLog(
+        ok
+            ? '  ✓ Live cert matches a configured pin'
+            : '  ✗ Pin mismatch — connection would be rejected',
+        isError: !ok,
+      ),
+      // Expected here: the demo host/pin is fake, so the TLS handshake fails.
+      onFailure: (e) => _addLog('  Pin check error: ${e.message}', isError: true),
+    );
+  }
+
+  // ── PIN lockout ────────────────────────────────────────────────────────────
+
+  Future<void> _setDemoPin() async {
+    _addLog('▶ Setting demo PIN (1234)…');
+    final result = await _pinLock.setPin('1234');
+    result.fold(
+      onSuccess: (_) => _addLog('  PIN set (stored as a salted SHA-256 hash)'),
+      onFailure: (e) =>
+          _addLog('  Set PIN error [${e.code}]: ${e.message}', isError: true),
+    );
+  }
+
+  Future<void> _verifyWrongPin() async {
+    _addLog('▶ Verifying a WRONG PIN (0000)…');
+    final result = await _pinLock.verifyPin('0000');
+    result.fold(
+      onSuccess: (v) => _addLog(
+        v.verified
+            ? '  ✓ Verified'
+            : v.isLockedOut
+                ? '  🔒 Locked out — retry in ${v.retryAfter().inSeconds}s'
+                : '  ✗ Wrong PIN — ${v.remainingAttempts} attempts left',
+        isError: !v.verified,
+      ),
+      onFailure: (e) =>
+          _addLog('  Verify error [${e.code}]: ${e.message}', isError: true),
+    );
+  }
+
   // ── UI ─────────────────────────────────────────────────────────────────────
 
   @override
@@ -360,6 +427,21 @@ class _HomePageState extends State<HomePage> {
                       onPressed: _endSession,
                       icon: const Icon(Icons.logout),
                       label: const Text('End Session'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _validatePinning,
+                      icon: const Icon(Icons.verified),
+                      label: const Text('Validate Cert Pin'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _setDemoPin,
+                      icon: const Icon(Icons.pin),
+                      label: const Text('Set PIN'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _verifyWrongPin,
+                      icon: const Icon(Icons.password),
+                      label: const Text('Verify Wrong PIN'),
                     ),
                   ],
                 ),

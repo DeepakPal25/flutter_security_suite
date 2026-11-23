@@ -87,7 +87,7 @@ class TokenExpiryManager {
   Future<SecurityResult<DateTime?>> getExpiry() async {
     try {
       final result = await _storage.read(key: expiryKey);
-      return result.fold(
+      return await result.fold(
         onSuccess: (raw) {
           final millis = raw == null ? null : int.tryParse(raw.trim());
           if (millis == null) return const Success(null);
