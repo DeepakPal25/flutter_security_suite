@@ -1,0 +1,62 @@
+# A .pubignore overrides the sibling .gitignore for `pub publish`, so the
+# root .gitignore's build-artifact exclusions must be repeated here or they
+# ship in the published archive. Keep this in sync with ./.gitignore.
+
+# Claude Code
+.claude/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Flutter/Dart/Pub related
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+/build/
+build/
+example/build/
+/coverage/
+
+# Swift Package Manager
+**/.build/
+**/Package.resolved
+
+# Android
+android/.gradle/
+android/local.properties
+android/captures/
+android/generatedDebugSources/
+example/android/.gradle/
+example/android/app/.cxx/
+
+# iOS / CocoaPods
+ios/Pods/
+ios/*.xcworkspace/
+example/ios/Pods/
+example/ios/.symlinks/
+example/ios/Flutter/ephemeral/
+**/Podfile.lock
+**/XCBuildData/
+*.xcuserstate
+
+# Private keys used only by the certificate-pinning tests (self-signed,
+# localhost-only). Not needed by consumers; must never ship publicly.
+test/fixtures/localhost_ec_key.pem
+test/fixtures/localhost_rsa_key.pem
