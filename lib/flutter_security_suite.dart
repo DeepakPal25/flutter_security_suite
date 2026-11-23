@@ -20,6 +20,7 @@ export 'core/utils/logger.dart';
 // Domain entities
 export 'domain/entities/anti_tamper_status.dart';
 export 'domain/entities/biometric_availability.dart';
+export 'domain/entities/obfuscation_status.dart';
 export 'domain/entities/screen_capture_event.dart';
 export 'domain/entities/security_status.dart';
 
@@ -29,8 +30,10 @@ export 'domain/repositories/secure_storage_repository.dart';
 
 // Managers
 export 'managers/app_lock_manager.dart';
+export 'managers/build_hardening_inspector.dart';
 export 'managers/secure_token_storage.dart';
 export 'managers/session_manager.dart';
+export 'managers/string_obfuscator.dart';
 export 'managers/token_expiry_manager.dart';
 
 // Public facade

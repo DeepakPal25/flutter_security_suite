@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.3.0 - 2026-11-23
+
+### Added
+- **String obfuscation** (`kit.obfuscation.obfuscator(secret)`): reversible SHA-256 keystream (counter mode) XOR obfuscation for embedded string constants (API URLs, keys, feature flags), with a fresh random salt per call and Base64Url output. Pure Dart, no platform channel. Documented as obfuscation, not encryption.
+- **Build hardening status** (`kit.obfuscation.buildStatus`): reports `isReleaseBuild` / `isDebugBuild` / `isProfileBuild` and a best-effort `symbolsLikelyStripped` heuristic for `--obfuscate`, with an `isHardened` convenience getter. Exposed via the new `ObfuscationStatus` entity and `BuildHardeningInspector`.
+
 ## 1.2.0 - 2026-11-15
 
 ### Added

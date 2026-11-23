@@ -28,6 +28,8 @@ A Flutter plugin for mobile app security — root/jailbreak, emulator, tamper an
 | **Token Storage & Expiry** | Built on Secure Storage | Built on Secure Storage |
 | **Session Manager / App Lock** | Dart (inactivity timer, lifecycle observer) | Dart (inactivity timer, lifecycle observer) |
 | **Redacting Logger** | `SecurityLogger.redact()` — off in release builds | same |
+| **String Obfuscation** | SHA-256 keystream XOR for embedded secrets (pure Dart) | same |
+| **Build Hardening Status** | Reports release/debug and whether symbols look obfuscated | same |
 
 ---
 
@@ -309,6 +311,34 @@ Logging is off by default and stays off in release builds unless you call `Secur
 SecurityLogger.redact('4111111111111111', visibleEnd: 4); // ****1111
 SecurityLogger.redact(null);                              // null
 ```
+
+### String Obfuscation & Build Hardening
+
+Keep embedded constants (API base URLs, keys, feature flags) out of plaintext in the compiled binary, where tools like `strings` would reveal them.
+
+```dart
+// Done once, offline, to produce the token you paste into source:
+final o = kit.obfuscation.obfuscator('a-build-time-seed');
+print(o.obfuscate('https://api.bank.com')); // -> copy this token
+
+// At runtime, in the app:
+const kObfuscatedUrl = '...token from above...';
+final url = kit.obfuscation.obfuscator('a-build-time-seed').reveal(kObfuscatedUrl);
+```
+
+> **Obfuscation, not encryption.** Because the seed ships in the same binary, a determined reverse-engineer can still recover the value. Use this only to raise the bar on constants that must be embedded — never for user secrets or tokens at rest (use secure storage for those).
+
+Inspect how the running build was compiled:
+
+```dart
+final status = kit.obfuscation.buildStatus;
+if (!status.isHardened) {
+  // Release build should be compiled with:
+  //   flutter build apk --obfuscate --split-debug-info=build/symbols
+}
+```
+
+`isHardened` is `true` only in a release build whose Dart symbols appear to have been renamed by `--obfuscate`.
 
 ### Screenshot Protection
 

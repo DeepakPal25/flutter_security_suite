@@ -31,6 +31,7 @@ import 'data/repositories_impl/secure_storage_repository_impl.dart';
 import 'data/repositories_impl/tamper_detection_repository_impl.dart';
 import 'domain/entities/anti_tamper_status.dart';
 import 'domain/entities/biometric_availability.dart';
+import 'domain/entities/obfuscation_status.dart';
 import 'domain/entities/screen_capture_event.dart';
 import 'domain/entities/security_status.dart';
 import 'domain/repositories/biometric_repository.dart';
@@ -48,7 +49,9 @@ import 'domain/usecases/secure_storage_usecase.dart';
 import 'domain/usecases/toggle_screenshot_protection_usecase.dart';
 import 'domain/usecases/validate_certificate_usecase.dart';
 import 'managers/app_lock_manager.dart';
+import 'managers/build_hardening_inspector.dart';
 import 'managers/secure_token_storage.dart';
+import 'managers/string_obfuscator.dart';
 import 'managers/session_manager.dart';
 import 'managers/token_expiry_manager.dart';
 import 'platform/method_channel_security.dart';
@@ -101,6 +104,9 @@ class SecureBankKit {
 
   /// Biometric / device-credential authentication.
   late final Biometrics biometrics;
+
+  /// String/secret obfuscation and release-build hardening status.
+  late final Obfuscation obfuscation;
 
   /// Access / refresh token persistence on top of secure storage.
   final SecureTokenStorage tokenStorage;
@@ -166,6 +172,7 @@ class SecureBankKit {
       validateCertificate,
     );
     biometrics = Biometrics._(biometricAuth);
+    obfuscation = Obfuscation._();
   }
 
   /// Creates and returns a fully-wired [SecureBankKit] instance.
@@ -567,4 +574,31 @@ class Biometrics {
     allowDeviceCredential: allowDeviceCredential,
     cancelLabel: cancelLabel,
   );
+}
+
+/// Sub-accessor for obfuscation: scrambling embedded string secrets so they
+/// are not visible in the binary, and reporting the build's hardening status.
+///
+/// ```dart
+/// // Hide an embedded constant from static inspection:
+/// final token = kit.obfuscation.obfuscator('build-seed').obfuscate('api-key');
+///
+/// // Refuse sensitive flows in a build that was not hardened:
+/// if (!kit.obfuscation.buildStatus.isHardened) {
+///   // debug / un-obfuscated build shipped by mistake
+/// }
+/// ```
+class Obfuscation {
+  final BuildHardeningInspector _inspector;
+
+  Obfuscation._({BuildHardeningInspector inspector = const BuildHardeningInspector()})
+    : _inspector = inspector;
+
+  /// Returns a [StringObfuscator] seeded with [secret]. Use the same
+  /// [secret] to `obfuscate` a value offline and `reveal` it at runtime.
+  StringObfuscator obfuscator(String secret) => StringObfuscator(secret);
+
+  /// How the running build was compiled (release/debug/profile and whether
+  /// Dart symbols look obfuscated). See [ObfuscationStatus].
+  ObfuscationStatus get buildStatus => _inspector.inspect();
 }
